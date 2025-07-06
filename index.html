@@ -4,380 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal de Recursos - Equipo Diamante</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    
     <style>
-        /* Estilos Generales y Branding */
-        :root {
-            --primary: #0d1b2a;
-            --secondary: #415a77;
-            --accent: #e0b1cb;
-            --accent-hover: #c497b2;
-            --blue-grey: #778da9;
-            --dark-text: #1b263b;
-            --bg-light: #f8f9fa;
-            --text-primary: #212529;
-            --text-secondary: #6b7280;
-            --border-light: #dee2e6;
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            background-color: var(--bg-light);
-            color: var(--text-primary);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Estructura Principal */
-        .main-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Barra Lateral (Sidebar) */
-        .sidebar {
-            width: 260px;
-            background-color: var(--primary);
-            color: white;
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            transition: width 0.3s ease;
-        }
-
-        .sidebar-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .sidebar-header h2 {
-            font-weight: 800;
-            font-size: 1.8rem;
-            margin: 0 0 5px 0;
-        }
-
-        .sidebar-header p {
-            font-size: 0.9rem;
-            opacity: 0.7;
-            margin: 0;
-        }
-
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-weight: 600;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .sidebar-nav a:hover, .sidebar-nav a.active {
-            background-color: var(--bg-light);
-            color: var(--primary);
-        }
-
-        .sidebar-nav a svg {
-            margin-right: 15px;
-            width: 24px;
-            height: 24px;
-        }
-        
-        .sidebar-nav a span {
-            transition: opacity 0.3s ease;
-        }
-
-        .sidebar-footer {
-            margin-top: auto;
-            text-align: center;
-            font-size: 0.8rem;
-            opacity: 0.6;
-            padding-top: 20px;
-        }
-
-        /* Área de Contenido Principal */
-        .content-area {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-        }
-
-        .content-header {
-            margin-bottom: 40px;
-        }
-
-        .content-header h1 {
-            font-weight: 800;
-            font-size: 2.5rem;
-            color: var(--dark-text);
-            margin: 0;
-        }
-
-        .content-header p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-top: 5px;
-        }
-
-        /* Grid de Herramientas */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .tool-card {
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-        }
-
-        .tool-card-image {
-            height: 180px;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .tool-card-content {
-            padding: 25px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .tool-card-content h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--dark-text);
-            margin: 0 0 10px 0;
-        }
-
-        .tool-card-content p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            flex-grow: 1;
-            margin: 0 0 20px 0;
-        }
-
-        .tool-card-content .btn {
-            display: inline-block;
-            width: 100%;
-            text-align: center;
-            padding: 12px 20px;
-            background-color: var(--primary);
-            color: white;
-            text-decoration: none;
-            font-weight: 700;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
-        }
-
-        .tool-card-content .btn:hover {
-            background-color: var(--secondary);
-        }
-
-        /* Tarjetas Placeholder */
-        .placeholder-card {
-            border: 2px dashed var(--border-light);
-            background-color: transparent;
-            box-shadow: none;
-            text-align: center;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .placeholder-card:hover {
-            transform: none;
-            box-shadow: none;
-            border-color: var(--blue-grey);
-        }
-
-        .placeholder-card .tool-card-content {
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .placeholder-card svg {
-            color: var(--blue-grey);
-            margin-bottom: 15px;
-            width: 40px;
-            height: 40px;
-        }
-
-        .placeholder-card h3 {
-            color: var(--dark-text);
-        }
-        
-        .placeholder-card p {
-            flex-grow: 0;
-        }
-
-        /* Diseño Responsive */
+        :root { --primary: #0d1b2a; --secondary: #415a77; --accent: #e0b1cb; --accent-hover: #c497b2; --blue-grey: #778da9; --dark-text: #1b263b; --bg-light: #f8f9fa; --text-primary: #212529; --text-secondary: #6b7280; --border-light: #dee2e6; }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-light); color: var(--text-primary); line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        .main-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background-color: var(--primary); color: white; padding: 30px 20px; display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.3s ease; }
+        .sidebar-header { text-align: center; margin-bottom: 40px; }
+        .sidebar-header h2 { font-weight: 800; font-size: 1.8rem; margin: 0 0 5px 0; }
+        .sidebar-header p { font-size: 0.9rem; opacity: 0.7; margin: 0; }
+        .sidebar-nav a { display: flex; align-items: center; padding: 15px; color: white; text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: 600; transition: background-color 0.3s ease, color 0.3s ease; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background-color: var(--bg-light); color: var(--primary); }
+        .sidebar-nav a svg { margin-right: 15px; width: 24px; height: 24px; }
+        .sidebar-nav a span { transition: opacity 0.3s ease; }
+        .sidebar-footer { margin-top: auto; text-align: center; font-size: 0.8rem; opacity: 0.6; padding-top: 20px; }
+        .content-area { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .content-header { margin-bottom: 40px; }
+        .content-header h1 { font-weight: 800; font-size: 2.5rem; color: var(--dark-text); margin: 0; }
+        .content-header p { font-size: 1.1rem; color: var(--text-secondary); margin-top: 5px; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .tool-card { background-color: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .tool-card-image { height: 180px; background-size: cover; background-position: center; }
+        .tool-card-content { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+        .tool-card-content h3 { font-size: 1.5rem; font-weight: 700; color: var(--dark-text); margin: 0 0 10px 0; }
+        .tool-card-content p { color: var(--text-secondary); font-size: 1rem; flex-grow: 1; margin: 0 0 20px 0; }
+        .tool-card-content .btn { display: inline-block; width: 100%; text-align: center; padding: 12px 20px; background-color: var(--primary); color: white; text-decoration: none; font-weight: 700; border-radius: 8px; transition: background-color 0.3s ease; }
+        .tool-card-content .btn:hover { background-color: var(--secondary); }
+        .placeholder-card { border: 2px dashed var(--border-light); background-color: transparent; box-shadow: none; text-align: center; align-items: center; justify-content: center; }
+        .placeholder-card:hover { transform: none; box-shadow: none; border-color: var(--blue-grey); }
+        .placeholder-card .tool-card-content { justify-content: center; align-items: center; }
+        .placeholder-card svg { color: var(--blue-grey); margin-bottom: 15px; width: 40px; height: 40px; }
+        .placeholder-card h3 { color: var(--dark-text); }
+        .placeholder-card p { flex-grow: 0; }
         @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column-reverse; /* Cambiado para que la nav bar esté abajo */
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                flex-direction: row;
-                align-items: center;
-                padding: 0 10px;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                z-index: 1000;
-                background-color: var(--primary); /* Asegurar fondo en móvil */
-            }
-            
-            body {
-                padding-bottom: 70px; /* Espacio para la barra de navegación inferior */
-            }
-
-            .sidebar-header, .sidebar-footer {
-                display: none;
-            }
-
-            .sidebar-nav {
-                display: flex;
-                flex-grow: 1;
-                justify-content: space-around;
-                width: 100%;
-            }
-
-            .sidebar-nav a {
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 10px 5px;
-                margin-bottom: 0;
-                font-size: 0.75rem;
-                flex: 1;
-                border-radius: 0;
-            }
-
-            .sidebar-nav a svg {
-                margin: 0 0 5px 0;
-            }
-            
-            .sidebar-nav a.active {
-                background-color: var(--secondary);
-                color: white;
-            }
-
-            .content-area {
-                padding: 20px 20px 40px 20px;
-            }
-
-            .content-header h1 {
-                font-size: 2rem;
-            }
-            
-            .content-header p {
-                font-size: 1rem;
-            }
-            
-            .tools-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
+            .main-container { flex-direction: column-reverse; }
+            .sidebar { width: 100%; height: auto; flex-direction: row; align-items: center; padding: 0 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); position: fixed; bottom: 0; left: 0; z-index: 1000; background-color: var(--primary); }
+            body { padding-bottom: 70px; }
+            .sidebar-header, .sidebar-footer { display: none; }
+            .sidebar-nav { display: flex; flex-grow: 1; justify-content: space-around; width: 100%; }
+            .sidebar-nav a { flex-direction: column; align-items: center; justify-content: center; padding: 10px 5px; margin-bottom: 0; font-size: 0.75rem; flex: 1; border-radius: 0; }
+            .sidebar-nav a svg { margin: 0 0 5px 0; }
+            .sidebar-nav a.active { background-color: var(--secondary); color: white; }
+            .content-area { padding: 20px 20px 40px 20px; }
+            .content-header h1 { font-size: 2rem; }
+            .content-header p { font-size: 1rem; }
+            .tools-grid { grid-template-columns: 1fr; gap: 20px; }
         }
     </style>
 </head>
 <body>
-
     <div class="main-container">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h2>Equipo Diamante</h2>
-                <p>Portal de Recursos</p>
+                <p>Tu Centro de Negocios</p>
             </div>
             <nav class="sidebar-nav">
                 <a href="#" class="active">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
                     <span>Dashboard</span>
                 </a>
-                </nav>
+            </nav>
             <div class="sidebar-footer">
                 &copy; 2025 - 4millones.com
             </div>
         </aside>
-
         <main class="content-area">
             <header class="content-header">
-                <h1>Bienvenido, Diamante</h1>
-                <p>Tus herramientas de éxito, todo en un solo lugar.</p>
+                <h1>Tu Centro de Negocios</h1>
+                <p>Las herramientas que necesitas para llevar tu negocio al siguiente nivel.</p>
             </header>
-
             <div class="tools-grid">
                 <div class="tool-card">
                     <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');"></div>
                     <div class="tool-card-content">
-                        <h3>Catálogo de Productos</h3>
-                        <p>Tu herramienta interactiva para presentar y compartir todo el portafolio de productos Gano Excel con tus clientes.</p>
+                        <h3>Catálogo Interactivo</h3>
+                        <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas.</p>
                         <a href="https://catalogo-gano-excel.vercel.app/" target="_blank" rel="noopener noreferrer" class="btn">Abrir Catálogo</a>
                     </div>
                 </div>
-
                 <div class="tool-card">
                     <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');"></div>
                     <div class="tool-card-content">
-                        <h3>Presentación de Oportunidad</h3>
-                        <p>La presentación oficial del negocio para compartir con tus prospectos y hacer crecer tu equipo de manera profesional.</p>
+                        <h3>Presentación de Negocio</h3>
+                        <p>Utiliza la presentación oficial para afiliar nuevos socios y construir tu equipo de manera profesional y duplicable.</p>
                         <a href="https://oportunidad.4millones.com/" target="_blank" rel="noopener noreferrer" class="btn">Abrir Presentación</a>
                     </div>
                 </div>
-
                 <div class="tool-card placeholder-card">
                     <div class="tool-card-content">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                            <path d="M9 7.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1z"/>
-                        </svg>
-                        <h3>Próximos Talleres</h3>
-                        <p>Aquí encontrarás el calendario y acceso a las próximas capacitaciones y talleres de producto y negocio.</p>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/><path d="M9 7.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1z"/></svg>
+                        <h3>Agenda de Capacitación</h3>
+                        <p>Conéctate a los próximos talleres y capacitaciones de producto y negocio para acelerar tu crecimiento.</p>
                     </div>
                 </div>
-                
                 <div class="tool-card placeholder-card">
                     <div class="tool-card-content">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                            <path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V1z"/>
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/><path d="M2 1a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V1z"/></svg>
                         <h3>Recursos de Marketing</h3>
-                        <p>Descarga imágenes, fichas técnicas y material de apoyo para potenciar tus redes sociales y tus ventas.</p>
+                        <p>Descarga imágenes, fichas y material de apoyo listos para usar en tus redes sociales y potenciar tus ventas.</p>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
-    
 </body>
 </html>
