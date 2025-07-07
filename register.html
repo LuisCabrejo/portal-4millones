@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Socio - Organización 4 Millones</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* Estilos (son los mismos que en la página de login para mantener consistencia) */
+        :root {
+            --primary: #0d1b2a;
+            --secondary: #415a77;
+            --dark-text: #1b263b;
+            --bg-light: #f8f9fa;
+            --text-primary: #212529;
+            --text-secondary: #6b7280;
+            --border-light: #dee2e6;
+            --success: #28a745;
+            --error: #dc3545;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .register-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .register-container h1 {
+            color: var(--dark-text);
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .register-container p {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-text);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: var(--secondary);
+        }
+        #message {
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        .success-message { color: var(--success); }
+        .error-message { color: var(--error); }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h1>Crear Cuenta</h1>
+        <p>Únete a la plataforma de la Organización 4 Millones.</p>
+
+        <form id="register-form">
+            <div class="form-group">
+                <label for="full_name">Nombre Completo</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña (mínimo 6 caracteres)</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">Crear mi Cuenta</button>
+        </form>
+
+        <div id="message"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // --- CONFIGURACIÓN DE SUPABASE ---
+        // ¡MUY IMPORTANTE! Reemplaza estos valores con tus propias llaves de Supabase.
+        const SUPABASE_URL = 'Pega_aquí_tu_URL_de_Supabase';
+        const SUPABASE_ANON_KEY = 'Pega_aquí_tu_llave_pública_Anon';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- LÓGICA DEL FORMULARIO DE REGISTRO ---
+        const registerForm = document.getElementById('register-form');
+        const messageDiv = document.getElementById('message');
+
+        registerForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const fullName = registerForm.full_name.value;
+            const email = registerForm.email.value;
+            const password = registerForm.password.value;
+            messageDiv.textContent = '';
+
+            // 1. Primero, intentamos registrar al usuario en el sistema de autenticación.
+            const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+                email: email,
+                password: password,
+            });
+
+            if (authError) {
+                messageDiv.textContent = 'Error al registrar: ' + authError.message;
+                messageDiv.className = 'error-message';
+                console.error('Auth Error:', authError.message);
+                return;
+            }
+
+            // Si el registro de autenticación fue exitoso...
+            if (authData.user) {
+                // 2. Ahora, insertamos el perfil en nuestra tabla "profiles".
+                const { error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .insert([
+                        {
+                            id: authData.user.id,
+                            full_name: fullName
+                        }
+                    ]);
+
+                if (profileError) {
+                    messageDiv.textContent = 'Error al crear el perfil: ' + profileError.message;
+                    messageDiv.className = 'error-message';
+                    console.error('Profile Error:', profileError.message);
+                } else {
+                    messageDiv.textContent = '¡Registro exitoso! Por favor, inicia sesión.';
+                    messageDiv.className = 'success-message';
+                    registerForm.reset();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<script>
+    // --- CONFIGURACIÓN DE SUPABASE ---
+    const SUPABASE_URL = 'Tu_URL_de_Supabase'; // Usa la misma URL que ya tienes
+    const SUPABASE_ANON_KEY = 'Tu_llave_pública_Anon'; // Usa la misma llave que ya tienes
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // --- LÓGICA DEL FORMULARIO ---
+    const loginForm = document.getElementById('login-form');
+    const messageDiv = document.getElementById('message');
+
+    loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const email = loginForm.email.value;
+        const password = loginForm.password.value;
+        messageDiv.textContent = 'Accediendo...';
+        messageDiv.className = '';
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
+
+        if (error) {
+            messageDiv.textContent = 'Email o contraseña incorrectos.';
+            messageDiv.className = 'error-message';
+            console.error('Error:', error.message);
+        } else {
+            messageDiv.textContent = '¡Inicio de sesión exitoso! Redirigiendo...';
+            messageDiv.className = 'success-message';
+            console.log('Success:', data);
+
+            // LÍNEA CLAVE: Redirigimos al portal después de 1 segundo.
+            setTimeout(() => {
+                window.location.href = 'portal.html';
+            }, 1000);
+        }
+    });
+</script>
