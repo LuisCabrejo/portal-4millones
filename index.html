@@ -1,16 +1,145 @@
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-
-    const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Guardia de Seguridad
-    const checkAuth = async () => {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
-            window.location.href = 'login.html';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Herramientas para Socios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    };
-    checkAuth();
-</script>
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .welcome-message {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .logout-btn {
+            background: #ff4757;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: #ff3742;
+        }
+
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Portal de Herramientas para Socios</h1>
+        <div id="content" class="loading">Verificando autenticación...</div>
+    </div>
+
+    <!-- Cargar Supabase desde CDN usando UMD -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
+        
+        // Verificar que Supabase esté cargado
+        if (typeof supabase === 'undefined') {
+            console.error('Supabase no se pudo cargar');
+            document.getElementById('content').innerHTML = '<p style="color: red;">Error: No se pudo cargar la autenticación</p>';
+        } else {
+            // Crear cliente de Supabase
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // Función para verificar autenticación
+            const checkAuth = async () => {
+                try {
+                    const { data: { session }, error } = await supabaseClient.auth.getSession();
+                    
+                    if (error) {
+                        console.error('Error al verificar sesión:', error);
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    
+                    if (!session) {
+                        // No hay sesión activa, redirigir al login
+                        window.location.href = 'login.html';
+                    } else {
+                        // Usuario autenticado, mostrar contenido
+                        showWelcomeContent(session.user);
+                    }
+                } catch (error) {
+                    console.error('Error inesperado:', error);
+                    window.location.href = 'login.html';
+                }
+            };
+
+            // Función para mostrar contenido de bienvenida
+            const showWelcomeContent = (user) => {
+                const contentDiv = document.getElementById('content');
+                contentDiv.innerHTML = `
+                    <div class="welcome-message">
+                        <p>¡Bienvenido, <strong>${user.email}</strong>!</p>
+                        <p>Has accedido exitosamente al portal de herramientas para socios.</p>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+                `;
+            };
+
+            // Función para cerrar sesión
+            window.logout = async () => {
+                try {
+                    const { error } = await supabaseClient.auth.signOut();
+                    if (error) {
+                        console.error('Error al cerrar sesión:', error);
+                    }
+                    window.location.href = 'login.html';
+                } catch (error) {
+                    console.error('Error inesperado al cerrar sesión:', error);
+                    window.location.href = 'login.html';
+                }
+            };
+
+            // Ejecutar verificación cuando el DOM esté listo
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', checkAuth);
+            } else {
+                checkAuth();
+            }
+        }
+    </script>
+</body>
+</html>
