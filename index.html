@@ -42,14 +42,12 @@
                         <p>Centro de Socios Estratégicos</p>
                     </div>
                 </div>
-
                 <!-- User info section -->
                 <div class="user-info" id="user-info">
                     <div class="user-name" id="user-name">Cargando...</div>
                     <div class="user-email" id="user-email">Cargando...</div>
                     <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
                 </div>
-
                 <nav class="sidebar-nav">
                     <a href="#" class="active">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -64,7 +62,6 @@
                         <span>Mi Perfil</span>
                     </a>
                 </nav>
-
                 <div class="sidebar-footer">
                     &copy; 2025 - 4millones.com
                 </div>
@@ -175,7 +172,6 @@
 
     <!-- Cargar Supabase desde CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
     <!-- Scripts modulares - SIN main.js -->
     <script type="module">
         import { initializeSupabase, authGuard, getUserProfile, logoutUser, getPersonalizedLinks } from './assets/js/auth.js';
@@ -189,7 +185,6 @@
         } else {
             try {
                 initializeSupabase();
-
                 // Referencias a elementos del DOM
                 const userNameEl = document.getElementById('user-name');
                 const userEmailEl = document.getElementById('user-email');
@@ -198,6 +193,14 @@
                 const logoutBtn = document.getElementById('logout-btn');
                 const catalogBtn = document.getElementById('catalog-btn');
                 const businessBtn = document.getElementById('business-btn');
+
+                // Función para personalizar el portal
+                const personalizePortal = (profile) => {
+                    const displayName = formatUserName(profile.full_name) || 'Usuario';
+
+                    // Actualizar información del usuario en sidebar
+                    userNameEl.textContent = displayName;
+                    userEmailEl.textContent = profile.email;
 
                 // Función para personalizar el portal
                 const personalizePortal = (profile) => {
@@ -229,7 +232,6 @@
                         // Verificar autenticación
                         const session = await authGuard(true);
                         if (!session) return;
-
                         // Obtener perfil del usuario
                         const profile = await getUserProfile();
                         if (!profile) {
