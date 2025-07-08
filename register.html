@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Socio - Organización 4 Millones</title>
-
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-
+    
     <style>
         /* Estilos (son los mismos que en la página de login para mantener consistencia) */
         :root {
@@ -95,7 +95,7 @@
     <div class="register-container">
         <h1>Crear Cuenta</h1>
         <p>Únete a la plataforma de la Organización 4 Millones.</p>
-
+        
         <form id="register-form">
             <div class="form-group">
                 <label for="full_name">Nombre Completo</label>
@@ -120,12 +120,8 @@
     <script>
         // --- CONFIGURACIÓN DE SUPABASE ---
         // ¡MUY IMPORTANTE! Reemplaza estos valores con tus propias llaves de Supabase.
-        const SUPABASE_URL = '4FpaoMFvJ7WS9v23';
-<<<<<<< HEAD
-        const SUPABASE_ANON_KEY = 'eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30';
-=======
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
->>>>>>> 852156d94607af81f426f7c97df958fd01ee7922
+        const SUPABASE_URL = 'Pega_aquí_tu_URL_de_Supabase';
+        const SUPABASE_ANON_KEY = 'Pega_aquí_tu_llave_pública_Anon';
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -151,7 +147,7 @@
                 messageDiv.textContent = 'Error al registrar: ' + authError.message;
                 messageDiv.className = 'error-message';
                 console.error('Auth Error:', authError.message);
-                return;
+                return; 
             }
 
             // Si el registro de autenticación fue exitoso...
@@ -160,12 +156,12 @@
                 const { error: profileError } = await supabaseClient
                     .from('profiles')
                     .insert([
-                        {
+                        { 
                             id: authData.user.id,
-                            full_name: fullName
+                            full_name: fullName 
                         }
                     ]);
-
+                
                 if (profileError) {
                     messageDiv.textContent = 'Error al crear el perfil: ' + profileError.message;
                     messageDiv.className = 'error-message';
@@ -173,7 +169,7 @@
                 } else {
                     messageDiv.textContent = '¡Registro exitoso! Por favor, inicia sesión.';
                     messageDiv.className = 'success-message';
-                    registerForm.reset();
+                    registerForm.reset(); 
                 }
             }
         });
