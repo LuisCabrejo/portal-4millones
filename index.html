@@ -682,7 +682,7 @@
         // 1. Configura el cliente de Supabase
         const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { createClient } = supabase; const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 2. Función del "Guardia de Seguridad"
         const checkAuth = async () => {
