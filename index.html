@@ -1,289 +1,414 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Portal de Herramientas para Socios</title>
-
-    <style>
-
-        * {
-
-            margin: 0;
-
-            padding: 0;
-
-            box-sizing: border-box;
-
-        }
-
-
-
-        body {
-
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-
-            min-height: 100vh;
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-        }
-
-
-
-        .container {
-
-            background: white;
-
-            padding: 2rem;
-
-            border-radius: 10px;
-
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-
-            text-align: center;
-
-            max-width: 600px;
-
-            width: 90%;
-
-        }
-
-
-
-        h1 {
-
-            color: #333;
-
-            margin-bottom: 1rem;
-
-        }
-
-
-
-        .welcome-message {
-
-            color: #666;
-
-            margin-bottom: 2rem;
-
-            font-size: 1.1rem;
-
-        }
-
-
-
-        .logout-btn {
-
-            background: #ff4757;
-
-            color: white;
-
-            padding: 12px 24px;
-
-            border: none;
-
-            border-radius: 5px;
-
-            cursor: pointer;
-
-            font-size: 1rem;
-
-            transition: background 0.3s ease;
-
-        }
-
-
-
-        .logout-btn:hover {
-
-            background: #ff3742;
-
-        }
-
-
-
-        .loading {
-
-            color: #666;
-
-            font-style: italic;
-
-        }
-
-    </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organización 4 Millones - Centro de Socios</title>
+    
+    <!-- Preconexiones para mejor rendimiento -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://unpkg.com">
+    
+    <!-- Fuentes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    
+    <!-- Meta tags para SEO y PWA -->
+    <meta name="description" content="Centro de Socios Estratégicos - Organización 4 Millones. Tu plataforma premium para construir tu activo empresarial.">
+    <meta name="keywords" content="organización, socios, herramientas, negocio, gano excel">
+    <meta name="author" content="Organización 4 Millones">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- Open Graph para redes sociales -->
+    <meta property="og:title" content="Organización 4 Millones - Centro de Socios">
+    <meta property="og:description" content="Tu centro de herramientas premium para construir tu propio activo empresarial">
+    <meta property="og:type" content="website">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏢%3C/text%3E%3C/svg%3E">
 </head>
-
 <body>
-
-    <div class="container">
-
-        <h1>🔒 Portal de Herramientas para Socios</h1>
-
-        <div id="content" class="loading">Verificando autenticación...</div>
-
-    </div>
-
-
-
-    <!-- Cargar Supabase desde CDN usando UMD -->
-
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-    <script>
-
-        // Configuración de Supabase
-
-        const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
-
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
-
-        
-
-        // Verificar que Supabase esté cargado
-
-        if (typeof supabase === 'undefined') {
-
-            console.error('Supabase no se pudo cargar');
-
-            document.getElementById('content').innerHTML = '<p style="color: red;">Error: No se pudo cargar la autenticación</p>';
-
-        } else {
-
-            // Crear cliente de Supabase
-
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-            
-
-            // Función para verificar autenticación
-
-            const checkAuth = async () => {
-
-                try {
-
-                    const { data: { session }, error } = await supabaseClient.auth.getSession();
-
-                    
-
-                    if (error) {
-
-                        console.error('Error al verificar sesión:', error);
-
-                        window.location.href = 'login.html';
-
-                        return;
-
-                    }
-
-                    
-
-                    if (!session) {
-
-                        // No hay sesión activa, redirigir al login
-
-                        window.location.href = 'login.html';
-
-                    } else {
-
-                        // Usuario autenticado, mostrar contenido
-
-                        showWelcomeContent(session.user);
-
-                    }
-
-                } catch (error) {
-
-                    console.error('Error inesperado:', error);
-
-                    window.location.href = 'login.html';
-
-                }
-
-            };
-
-
-
-            // Función para mostrar contenido de bienvenida
-
-            const showWelcomeContent = (user) => {
-
-                const contentDiv = document.getElementById('content');
-
-                contentDiv.innerHTML = `
-
-                    <div class="welcome-message">
-
-                        <p>¡Bienvenido, <strong>${user.email}</strong>!</p>
-
-                        <p>Has accedido exitosamente al portal de herramientas para socios.</p>
-
-                    </div>
-
-                    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-
-                `;
-
-            };
-
-
-
-            // Función para cerrar sesión
-
-            window.logout = async () => {
-
-                try {
-
-                    const { error } = await supabaseClient.auth.signOut();
-
-                    if (error) {
-
-                        console.error('Error al cerrar sesión:', error);
-
-                    }
-
-                    window.location.href = 'login.html';
-
-                } catch (error) {
-
-                    console.error('Error inesperado al cerrar sesión:', error);
-
-                    window.location.href = 'login.html';
-
-                }
-
-            };
-
-
-
-            // Ejecutar verificación cuando el DOM esté listo
-
-            if (document.readyState === 'loading') {
-
-                document.addEventListener('DOMContentLoaded', checkAuth);
-
-            } else {
-
-                checkAuth();
-
-            }
-
-        }
-
-    </script>
-
+    <!-- Estados de la aplicación -->
+    <div id="app-loading" class="loading-container">
+        <div class="loading-spinner loading-spinner-lg"></div>
+        <p id="loading-text">Verificando autenticación...</p>
+    </div>
+
+    <div id="app-error" class="error-container hidden">
+        <h2>Error de Aplicación</h2>
+        <p id="error-message">No se pudo cargar la aplicación. Por favor, recarga la página.</p>
+        <button onclick="window.location.reload()" class="btn btn-primary">Recargar Página</button>
+    </div>
+
+    <!-- Contenido principal (oculto hasta que la auth sea exitosa) -->
+    <div id="app-content" class="hidden">
+        <!-- Partículas de fondo -->
+        <div class="particles" id="particles-container">
+            <!-- Las partículas se generarán dinámicamente -->
+        </div>
+
+        <div class="main-container">
+            <!-- Sidebar de navegación -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-container">
+                        <h2>Proyecto 4 Millones</h2>
+                        <p>Centro de Socios Estratégicos</p>
+                    </div>
+                </div>
+                
+                <!-- Información del usuario -->
+                <div class="user-info" id="user-info">
+                    <div class="user-email" id="user-email">Cargando...</div>
+                    <button class="logout-btn" onclick="handleLogout()" aria-label="Cerrar sesión">
+                        Cerrar Sesión
+                    </button>
+                </div>
+                
+                <!-- Navegación principal -->
+                <nav class="sidebar-nav" role="navigation" aria-label="Navegación principal">
+                    <a href="index.html" class="nav-link active" aria-current="page">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="pages/profile.html" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span>Mi Perfil</span>
+                    </a>
+                </nav>
+                
+                <div class="sidebar-footer">
+                    &copy; 2025 - 4millones.com
+                </div>
+            </aside>
+
+            <!-- Área de contenido principal -->
+            <main class="content-area" role="main">
+                <!-- Header de la página -->
+                <header class="page-header">
+                    <h1 id="welcome-title">Organización 4 Millones</h1>
+                    <p class="subtitle">Tu centro de herramientas premium para construir tu propio activo empresarial con el respaldo de una organización líder.</p>
+                    <div class="success-indicator">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                        </svg>
+                        Herramientas de Última Generación
+                    </div>
+                </header>
+
+                <!-- Grid de herramientas -->
+                <section class="tools-grid" aria-label="Herramientas disponibles">
+                    <!-- Catálogo Interactivo -->
+                    <article class="tool-card">
+                        <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');" role="img" aria-label="Vista previa del catálogo interactivo">
+                            <div class="status-badge">Disponible</div>
+                        </div>
+                        <div class="tool-card-content">
+                            <h3>Catálogo Interactivo</h3>
+                            <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
+                            <a href="https://catalogo.4millones.com/" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="btn btn-primary"
+                               id="catalog-link"
+                               aria-label="Abrir catálogo interactivo en nueva pestaña">
+                                Abrir Catálogo
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- Modelo de Negocio -->
+                    <article class="tool-card">
+                        <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');" role="img" aria-label="Vista previa del modelo de negocio">
+                            <div class="status-badge">Disponible</div>
+                        </div>
+                        <div class="tool-card-content">
+                            <h3>Modelo de Negocio</h3>
+                            <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
+                            <a href="https://oportunidad.4millones.com/" 
+                               target="_blank" 
+                               rel="noopener noreferrer" 
+                               class="btn btn-primary"
+                               id="opportunity-link"
+                               aria-label="Abrir presentación de modelo de negocio en nueva pestaña">
+                                Abrir Presentación
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </article>
+
+                    <!-- Agenda de Capacitación (Próximamente) -->
+                    <article class="tool-card placeholder-card">
+                        <div class="tool-card-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                <path d="M9 7.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1z"/>
+                            </svg>
+                            <h3>Agenda de Capacitación</h3>
+                            <p>Conéctate a los próximos talleres y capacitaciones de producto y negocio para acelerar tu crecimiento profesional.</p>
+                            <span class="coming-soon">Próximamente</span>
+                        </div>
+                    </article>
+
+                    <!-- Recursos de Marketing (Próximamente) -->
+                    <article class="tool-card placeholder-card">
+                        <div class="tool-card-content">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                            </svg>
+                            <h3>Recursos de Marketing</h3>
+                            <p>Descarga imágenes, fichas y material de apoyo listos para usar en tus redes sociales y potenciar tus ventas digitales.</p>
+                            <span class="coming-soon">Próximamente</span>
+                        </div>
+                    </article>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Cargar Supabase primero -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+    
+    <!-- Scripts de la aplicación (como módulos ES6) -->
+    <script type="module">
+        // Importar módulos
+        import { initializeAuth, authGuard, getUserProfile } from './assets/js/auth.js';
+        import { showMessage, toggleElement, log, buildUrl } from './assets/js/utils.js';
+        import { APP_CONFIG } from './assets/js/config.js';
+
+        // Variables globales de la página
+        let currentUser = null;
+        let userProfile = null;
+
+        // Referencias a elementos del DOM
+        const elements = {
+            loading: document.getElementById('app-loading'),
+            error: document.getElementById('app-error'),
+            content: document.getElementById('app-content'),
+            loadingText: document.getElementById('loading-text'),
+            errorMessage: document.getElementById('error-message'),
+            welcomeTitle: document.getElementById('welcome-title'),
+            userEmail: document.getElementById('user-email'),
+            catalogLink: document.getElementById('catalog-link'),
+            opportunityLink: document.getElementById('opportunity-link'),
+            particlesContainer: document.getElementById('particles-container')
+        };
+
+        // Función para mostrar estado de error
+        const showErrorState = (message = 'Error inesperado') => {
+            elements.errorMessage.textContent = message;
+            toggleElement(elements.loading, false);
+            toggleElement(elements.content, false);
+            toggleElement(elements.error, true, 'flex');
+        };
+
+        // Función para mostrar contenido principal
+        const showMainContent = () => {
+            toggleElement(elements.loading, false);
+            toggleElement(elements.error, false);
+            toggleElement(elements.content, true, 'block');
+        };
+
+        // Función para crear partículas animadas
+        const createParticles = () => {
+            const particleCount = 9;
+            const container = elements.particlesContainer;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${10 + (i * 10)}%`;
+                particle.style.animationDelay = `${i * 0.5}s`;
+                container.appendChild(particle);
+            }
+        };
+
+        // Función para personalizar la interfaz con datos del usuario
+        const personalizeInterface = async () => {
+            try {
+                // Cargar perfil del usuario
+                userProfile = await getUserProfile();
+                
+                if (userProfile?.full_name) {
+                    elements.welcomeTitle.textContent = `Bienvenido, ${userProfile.full_name}`;
+                    log('info', `Interfaz personalizada para: ${userProfile.full_name}`);
+                }
+                
+                // Personalizar enlaces con ID del usuario
+                if (currentUser?.id) {
+                    // Actualizar enlace del catálogo
+                    const catalogUrl = buildUrl(elements.catalogLink.href, { socio: currentUser.id });
+                    elements.catalogLink.href = catalogUrl;
+                    
+                    // Actualizar enlace de la oportunidad
+                    const opportunityUrl = buildUrl(elements.opportunityLink.href, { socio: currentUser.id });
+                    elements.opportunityLink.href = opportunityUrl;
+                    
+                    log('debug', 'Enlaces personalizados configurados', {
+                        catalog: catalogUrl,
+                        opportunity: opportunityUrl
+                    });
+                }
+                
+            } catch (error) {
+                log('warn', 'Error al personalizar interfaz', error);
+                // No es crítico, continuar sin personalización
+            }
+        };
+
+        // Función para manejar cierre de sesión
+        window.handleLogout = async () => {
+            try {
+                elements.loadingText.textContent = 'Cerrando sesión...';
+                toggleElement(elements.content, false);
+                toggleElement(elements.loading, true, 'flex');
+                
+                const { Auth } = await import('./assets/js/auth.js');
+                const result = await Auth.signOut();
+                
+                if (result.success) {
+                    log('info', 'Sesión cerrada exitosamente');
+                    window.location.href = 'auth/login.html';
+                } else {
+                    throw new Error(result.error || 'Error al cerrar sesión');
+                }
+                
+            } catch (error) {
+                log('error', 'Error al cerrar sesión', error);
+                showErrorState('Error al cerrar sesión. Redirigiendo...');
+                
+                // Redirigir al login después de un delay como fallback
+                setTimeout(() => {
+                    window.location.href = 'auth/login.html';
+                }, 2000);
+            }
+        };
+
+        // Función principal de inicialización
+        const initializeApp = async () => {
+            try {
+                log('info', 'Inicializando aplicación...');
+                
+                // Paso 1: Inicializar sistema de autenticación
+                elements.loadingText.textContent = 'Inicializando sistema...';
+                const authInitialized = await initializeAuth();
+                
+                if (!authInitialized) {
+                    throw new Error('No se pudo inicializar el sistema de autenticación');
+                }
+                
+                // Paso 2: Verificar autenticación
+                elements.loadingText.textContent = 'Verificando autenticación...';
+                const authResult = await authGuard(
+                    // onSuccess
+                    (user, session) => {
+                        currentUser = user;
+                        elements.userEmail.textContent = user.email;
+                        log('info', `Usuario autenticado: ${user.email}`);
+                    },
+                    // onError
+                    (error) => {
+                        log('warn', 'Usuario no autenticado', error);
+                        window.location.href = 'auth/login.html';
+                    }
+                );
+                
+                if (!authResult.authenticated) {
+                    // authGuard ya maneja la redirección
+                    return;
+                }
+                
+                // Paso 3: Personalizar interfaz
+                elements.loadingText.textContent = 'Personalizando interfaz...';
+                await personalizeInterface();
+                
+                // Paso 4: Crear efectos visuales
+                createParticles();
+                
+                // Paso 5: Mostrar contenido principal
+                showMainContent();
+                
+                log('info', 'Aplicación inicializada correctamente');
+                
+            } catch (error) {
+                log('error', 'Error al inicializar aplicación', error);
+                showErrorState(error.message || 'Error al cargar la aplicación');
+            }
+        };
+
+        // Esperar a que el DOM esté listo y Supabase esté cargado
+        const waitForDependencies = () => {
+            return new Promise((resolve) => {
+                const checkDependencies = () => {
+                    if (document.readyState === 'complete' && typeof supabase !== 'undefined') {
+                        resolve();
+                    } else {
+                        setTimeout(checkDependencies, 100);
+                    }
+                };
+                checkDependencies();
+            });
+        };
+
+        // Inicializar cuando todo esté listo
+        waitForDependencies().then(() => {
+            initializeApp();
+        });
+
+        // Manejar errores globales
+        window.addEventListener('error', (event) => {
+            log('error', 'Error global capturado', event.error);
+            
+            if (!elements.content.classList.contains('hidden')) {
+                showMessage('Ha ocurrido un error inesperado', 'error');
+            }
+        });
+
+        // Manejar errores de promesas no capturadas
+        window.addEventListener('unhandledrejection', (event) => {
+            log('error', 'Promesa rechazada no manejada', event.reason);
+            event.preventDefault(); // Evitar que aparezca en la consola
+        });
+    </script>
+
+    <!-- Script para navegación mejorada -->
+    <script>
+        // Mejorar navegación entre páginas
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a[href]');
+            if (link && link.href.includes(window.location.origin)) {
+                // Manejar navegación interna si es necesario
+                console.log('Navegando a:', link.href);
+            }
+        });
+
+        // Prefetch de recursos importantes
+        const prefetchResources = [
+            'pages/profile.html',
+            'auth/login.html'
+        ];
+
+        prefetchResources.forEach(url => {
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = url;
+            document.head.appendChild(link);
+        });
+    </script>
 </body>
-
 </html>
