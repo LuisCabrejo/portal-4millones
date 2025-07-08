@@ -6,8 +6,8 @@
     <title>Iniciar Sesión - Organización 4 Millones</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #0d1b2a; --secondary: #415a77; --dark-text: #1b263b; --bg-light: #f8f9fa; --text-primary: #212529; --text-secondary: #6b7280; --border-light: #dee2e6; --error: #dc3545; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-light); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        :root { --primary: #0d1b2a; --secondary: #415a77; --dark-text: #1b263b; --bg-light: #f8f9fa; --text-primary: #212529; --text-secondary: #6b7280; --border-light: #dee2e6; --error: #dc3545; --success: #28a745;}
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background-color: white; padding: 40px; border-radius: 24px; box-shadow: 0 16px 48px rgba(13, 27, 42, 0.16); width: 100%; max-width: 420px; text-align: center; border: 1px solid #e9ecef; }
         h1 { color: var(--dark-text); font-weight: 800; font-size: 2rem; margin-bottom: 10px; }
         p { color: var(--text-secondary); margin-bottom: 30px; }
@@ -17,7 +17,9 @@
         input:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 3px rgba(65, 90, 119, 0.2); }
         .btn { width: 100%; padding: 14px; border: none; background: linear-gradient(135deg, #0d1b2a 0%, #415a77 100%); color: white; font-weight: 700; font-size: 1rem; border-radius: 12px; cursor: pointer; transition: transform 0.2s; }
         .btn:hover { transform: translateY(-2px); }
-        .message { margin-top: 20px; font-weight: 600; color: var(--error); }
+        .message { margin-top: 20px; font-weight: 600; padding: 10px; border-radius: 8px; }
+        .message.error { color: var(--error); background-color: #fbe9e7; }
+        .message.success { color: var(--success); background-color: #e8f5e9; }
         .link-container { margin-top: 20px; font-size: 0.9rem; }
         .link-container a { color: var(--secondary); text-decoration: none; font-weight: 600; }
     </style>
@@ -37,7 +39,7 @@
             </div>
             <button type="submit" class="btn">Acceder</button>
         </form>
-        <div class="message" id="message"></div>
+        <div id="message"></div>
         <div class="link-container">
             <p>¿No tienes cuenta? <a href="register.html">Regístrate aquí</a></p>
         </div>
@@ -54,12 +56,16 @@
             const email = e.target.email.value;
             const password = e.target.password.value;
             messageDiv.textContent = 'Accediendo...';
+            messageDiv.className = 'message';
             
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 messageDiv.textContent = 'Email o contraseña incorrectos.';
+                messageDiv.className = 'message error';
             } else {
-                window.location.href = 'index.html';
+                messageDiv.textContent = '¡Inicio de sesión exitoso! Redirigiendo...';
+                messageDiv.className = 'message success';
+                setTimeout(() => { window.location.href = 'index.html'; }, 1000);
             }
         });
     </script>
