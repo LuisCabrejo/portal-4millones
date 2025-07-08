@@ -1,289 +1,126 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Portal de Herramientas para Socios</title>
-
-    <style>
-
-        * {
-
-            margin: 0;
-
-            padding: 0;
-
-            box-sizing: border-box;
-
-        }
-
-
-
-        body {
-
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-
-            min-height: 100vh;
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-        }
-
-
-
-        .container {
-
-            background: white;
-
-            padding: 2rem;
-
-            border-radius: 10px;
-
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-
-            text-align: center;
-
-            max-width: 600px;
-
-            width: 90%;
-
-        }
-
-
-
-        h1 {
-
-            color: #333;
-
-            margin-bottom: 1rem;
-
-        }
-
-
-
-        .welcome-message {
-
-            color: #666;
-
-            margin-bottom: 2rem;
-
-            font-size: 1.1rem;
-
-        }
-
-
-
-        .logout-btn {
-
-            background: #ff4757;
-
-            color: white;
-
-            padding: 12px 24px;
-
-            border: none;
-
-            border-radius: 5px;
-
-            cursor: pointer;
-
-            font-size: 1rem;
-
-            transition: background 0.3s ease;
-
-        }
-
-
-
-        .logout-btn:hover {
-
-            background: #ff3742;
-
-        }
-
-
-
-        .loading {
-
-            color: #666;
-
-            font-style: italic;
-
-        }
-
-    </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Herramientas - Organización 4 Millones</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0d1b2a; --secondary: #415a77; --accent: #e0b1cb; --accent-hover: #c497b2; --blue-grey: #778da9; --dark-text: #1b263b; --bg-light: #f8f9fa; --text-primary: #212529; --text-secondary: #6b7280; --border-light: #dee2e6; --gradient-primary: linear-gradient(135deg, #0d1b2a 0%, #415a77 100%); --shadow-soft: 0 4px 20px rgba(13, 27, 42, 0.08); --shadow-medium: 0 8px 32px rgba(13, 27, 42, 0.12);
+        }
+        body { font-family: 'Inter', sans-serif; margin: 0; background-color: var(--bg-light); color: var(--text-primary); line-height: 1.6; }
+        .main-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--gradient-primary); color: white; padding: 40px 25px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header h2 { font-weight: 800; font-size: 1.9rem; margin: 0 0 8px 0; background: linear-gradient(135deg, #ffffff 0%, #e0b1cb 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-header p { font-size: 0.95rem; opacity: 0.8; margin: 0 0 40px 0; font-weight: 500; }
+        .sidebar-nav { flex-grow: 1; }
+        .sidebar-nav a { display: flex; align-items: center; padding: 18px 20px; color: white; text-decoration: none; border-radius: 16px; margin-bottom: 12px; font-weight: 600; transition: all 0.3s; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255, 255, 255, 0.95); color: var(--primary); transform: translateX(8px); box-shadow: var(--shadow-soft); }
+        .sidebar-nav a svg { margin-right: 15px; width: 24px; height: 24px; }
+        .sidebar-footer { margin-top: auto; text-align: center; font-size: 0.8rem; opacity: 0.6; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .content-area { flex-grow: 1; padding: 50px; overflow-y: auto; }
+        .content-header h1 { font-weight: 900; font-size: 3.2rem; color: var(--dark-text); margin: 0 0 15px 0; }
+        .content-header p { font-size: 1.25rem; color: var(--text-secondary); margin: 0; font-weight: 500; max-width: 600px; }
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 35px; margin-top: 50px; }
+        .tool-card { background: white; border-radius: 24px; box-shadow: var(--shadow-soft); overflow: hidden; display: flex; flex-direction: column; }
+        .tool-card-image { height: 200px; background-size: cover; background-position: center; }
+        .tool-card-content { padding: 30px; flex-grow: 1; display: flex; flex-direction: column; }
+        .tool-card h3 { font-size: 1.6rem; font-weight: 700; margin: 0 0 15px 0; }
+        .tool-card p { font-size: 1.05rem; flex-grow: 1; margin: 0 0 25px 0; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; width: 100%; text-align: center; padding: 16px 24px; background: var(--gradient-primary); color: white; font-weight: 700; border-radius: 16px; }
+        .btn svg { margin-left: 8px; }
+    </style>
 </head>
-
 <body>
-
-    <div class="container">
-
-        <h1>🔒 Portal de Herramientas para Socios</h1>
-
-        <div id="content" class="loading">Verificando autenticación...</div>
-
-    </div>
-
-
-
-    <!-- Cargar Supabase desde CDN usando UMD -->
-
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-    <script>
-
-        // Configuración de Supabase
-
-        const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
-
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
-
-        
-
-        // Verificar que Supabase esté cargado
-
-        if (typeof supabase === 'undefined') {
-
-            console.error('Supabase no se pudo cargar');
-
-            document.getElementById('content').innerHTML = '<p style="color: red;">Error: No se pudo cargar la autenticación</p>';
-
-        } else {
-
-            // Crear cliente de Supabase
-
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-            
-
-            // Función para verificar autenticación
-
-            const checkAuth = async () => {
-
-                try {
-
-                    const { data: { session }, error } = await supabaseClient.auth.getSession();
-
-                    
-
-                    if (error) {
-
-                        console.error('Error al verificar sesión:', error);
-
-                        window.location.href = 'login.html';
-
-                        return;
-
-                    }
-
-                    
-
-                    if (!session) {
-
-                        // No hay sesión activa, redirigir al login
-
-                        window.location.href = 'login.html';
-
-                    } else {
-
-                        // Usuario autenticado, mostrar contenido
-
-                        showWelcomeContent(session.user);
-
-                    }
-
-                } catch (error) {
-
-                    console.error('Error inesperado:', error);
-
-                    window.location.href = 'login.html';
-
-                }
-
-            };
-
-
-
-            // Función para mostrar contenido de bienvenida
-
-            const showWelcomeContent = (user) => {
-
-                const contentDiv = document.getElementById('content');
-
-                contentDiv.innerHTML = `
-
-                    <div class="welcome-message">
-
-                        <p>¡Bienvenido, <strong>${user.email}</strong>!</p>
-
-                        <p>Has accedido exitosamente al portal de herramientas para socios.</p>
-
-                    </div>
-
-                    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-
-                `;
-
-            };
-
-
-
-            // Función para cerrar sesión
-
-            window.logout = async () => {
-
-                try {
-
-                    const { error } = await supabaseClient.auth.signOut();
-
-                    if (error) {
-
-                        console.error('Error al cerrar sesión:', error);
-
-                    }
-
-                    window.location.href = 'login.html';
-
-                } catch (error) {
-
-                    console.error('Error inesperado al cerrar sesión:', error);
-
-                    window.location.href = 'login.html';
-
-                }
-
-            };
-
-
-
-            // Ejecutar verificación cuando el DOM esté listo
-
-            if (document.readyState === 'loading') {
-
-                document.addEventListener('DOMContentLoaded', checkAuth);
-
-            } else {
-
-                checkAuth();
-
-            }
-
-        }
-
-    </script>
-
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Proyecto 4 Millones</h2>
+                <p>Centro de Socios Estratégicos</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="active">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" id="logout-btn" style="color: #ffc107;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 17v-3H9v-4h7V7l5 5-5 5zM14 2a2 2 0 0 1 2 2v2h-2V4H5v16h9v-2h2v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9z"/></svg>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                &copy; 2025 - 4millones.com
+            </div>
+        </aside>
+        <main class="content-area">
+            <header class="content-header">
+                <h1 id="welcome-message">Bienvenido</h1>
+                <p>Tus herramientas de éxito, todo en un solo lugar.</p>
+            </header>
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');"></div>
+                    <div class="tool-card-content">
+                        <h3>Catálogo Interactivo</h3>
+                        <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes.</p>
+                        <a href="https://catalogo.4millones.com/" target="_blank" rel="noopener noreferrer" class="btn">Abrir Catálogo <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/></svg></a>
+                    </div>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');"></div>
+                    <div class="tool-card-content">
+                        <h3>Modelo de Negocio</h3>
+                        <p>La herramienta clave para presentar la oportunidad y expandir tu organización.</p>
+                        <a href="https://oportunidad.4millones.com/" target="_blank" rel="noopener noreferrer" class="btn">Abrir Presentación <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/></svg></a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        if (typeof supabase === 'undefined') {
+            document.body.innerHTML = '<h1>Error de conexión. No se pudo cargar la librería de autenticación.</h1>';
+        } else {
+            const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            const welcomeMessage = document.getElementById('welcome-message');
+            const logoutButton = document.getElementById('logout-btn');
+
+            const checkAuth = async () => {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', session.user.id)
+                    .single();
+
+                if (profile && profile.full_name) {
+                    welcomeMessage.textContent = `Bienvenido, ${profile.full_name}`;
+                }
+            };
+
+            const handleLogout = async () => {
+                await supabaseClient.auth.signOut();
+                window.location.href = 'login.html';
+            };
+
+            logoutButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleLogout();
+            });
+
+            checkAuth();
+        }
+    </script>
 </body>
-
 </html>
