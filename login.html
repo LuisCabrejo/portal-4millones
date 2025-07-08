@@ -1,29 +1,258 @@
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
-
-    const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // Lógica del Formulario
-    const loginForm = document.getElementById('login-form');
-    const messageDiv = document.getElementById('message');
-
-    loginForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const email = loginForm.email.value;
-        const password = loginForm.password.value;
-        messageDiv.textContent = 'Accediendo...';
-        
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-        if (error) {
-            messageDiv.textContent = 'Email o contraseña incorrectos.';
-            messageDiv.className = 'error-message';
-        } else {
-            messageDiv.textContent = '¡Inicio de sesión exitoso! Redirigiendo...';
-            messageDiv.className = 'success-message';
-            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Portal de Socios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    });
-</script>
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .submit-btn:hover {
+            background: #5a67d8;
+        }
+
+        .submit-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #2d7d32;
+            border: 1px solid #9ae6b4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Iniciar Sesión</h1>
+        
+        <div id="message"></div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submit-btn">Iniciar Sesión</button>
+        </form>
+        
+        <div class="register-link">
+            <p>¿No tienes cuenta? <a href="register.html">Regístrate aquí</a></p>
+        </div>
+    </div>
+
+    <!-- Cargar Supabase desde CDN usando UMD -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
+        
+        // Verificar que Supabase esté cargado
+        if (typeof supabase === 'undefined') {
+            console.error('Supabase no se pudo cargar');
+            document.getElementById('message').innerHTML = '<div class="error-message">Error: No se pudo cargar el sistema de autenticación</div>';
+        } else {
+            // Crear cliente de Supabase
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // Referencias a elementos del DOM
+            const loginForm = document.getElementById('login-form');
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Función para mostrar mensajes
+            const showMessage = (message, type) => {
+                messageDiv.innerHTML = `<div class="${type}-message">${message}</div>`;
+            };
+
+            // Función para limpiar mensajes
+            const clearMessage = () => {
+                messageDiv.innerHTML = '';
+            };
+
+            // Verificar si ya hay una sesión activa
+            const checkExistingSession = async () => {
+                try {
+                    const { data: { session }, error } = await supabaseClient.auth.getSession();
+                    if (session && !error) {
+                        // Usuario ya autenticado, redirigir al portal
+                        window.location.href = 'index.html';
+                    }
+                } catch (error) {
+                    console.error('Error al verificar sesión existente:', error);
+                }
+            };
+
+            // Manejar el envío del formulario
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                
+                // Limpiar mensajes anteriores
+                clearMessage();
+                
+                // Deshabilitar botón para evitar múltiples envíos
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Iniciando sesión...';
+                
+                // Obtener datos del formulario
+                const email = loginForm.email.value.trim();
+                const password = loginForm.password.value;
+                
+                try {
+                    // Intentar iniciar sesión
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+                    
+                    if (error) {
+                        let errorMessage = 'Error al iniciar sesión: ';
+                        
+                        // Personalizar mensajes de error comunes
+                        switch (error.message) {
+                            case 'Invalid login credentials':
+                                errorMessage += 'Credenciales inválidas. Verifica tu email y contraseña.';
+                                break;
+                            case 'Email not confirmed':
+                                errorMessage += 'Tu cuenta no ha sido confirmada. Revisa tu correo electrónico.';
+                                break;
+                            case 'Too many requests':
+                                errorMessage += 'Demasiados intentos. Intenta de nuevo en unos minutos.';
+                                break;
+                            default:
+                                errorMessage += error.message;
+                        }
+                        
+                        showMessage(errorMessage, 'error');
+                    } else if (data.user) {
+                        // Login exitoso
+                        showMessage('¡Inicio de sesión exitoso! Redirigiendo...', 'success');
+                        
+                        // Redirigir después de un breve delay
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.error('Error inesperado:', error);
+                    showMessage('Error inesperado. Por favor, intenta de nuevo.', 'error');
+                } finally {
+                    // Rehabilitar botón
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Iniciar Sesión';
+                }
+            });
+
+            // Ejecutar verificación cuando el DOM esté listo
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', checkExistingSession);
+            } else {
+                checkExistingSession();
+            }
+        }
+    </script>
+</body>
+</html>
