@@ -56,12 +56,8 @@
             const email = loginForm.email.value;
             const password = loginForm.password.value;
             messageDiv.textContent = 'Accediendo...';
-            messageDiv.className = '';
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
             if (error) {
                 messageDiv.textContent = 'Email o contraseña incorrectos.';
