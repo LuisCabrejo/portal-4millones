@@ -1,38 +1,322 @@
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Portal de Socios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    // Lógica del Formulario
-    const registerForm = document.getElementById('register-form');
-    const messageDiv = document.getElementById('message');
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
 
-    registerForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const fullName = registerForm.full_name.value;
-        const email = registerForm.email.value;
-        const password = registerForm.password.value;
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 2rem;
+        }
 
-        const { data, error } = await supabaseClient.auth.signUp({ email, password });
+        .form-group {
+            margin-bottom: 1rem;
+        }
 
-        if (error) {
-            messageDiv.textContent = 'Error al registrar: ' + error.message;
-            messageDiv.className = 'error-message';
-        } else if (data.user) {
-            const { error: profileError } = await supabaseClient
-                .from('profiles')
-                .insert([{ id: data.user.id, full_name: fullName }]);
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .submit-btn:hover {
+            background: #5a67d8;
+        }
+
+        .submit-btn:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #feb2b2;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #2d7d32;
+            border: 1px solid #9ae6b4;
+        }
+
+        .password-requirements {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Registro</h1>
+        
+        <div id="message"></div>
+        
+        <form id="register-form">
+            <div class="form-group">
+                <label for="full_name">Nombre Completo</label>
+                <input type="text" id="full_name" name="full_name" required>
+            </div>
             
-            if (profileError) {
-                messageDiv.textContent = 'Error al crear el perfil: ' + profileError.message;
-                messageDiv.className = 'error-message';
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" required minlength="6">
+                <div class="password-requirements">Mínimo 6 caracteres</div>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submit-btn">Registrarse</button>
+        </form>
+        
+        <div class="login-link">
+            <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión aquí</a></p>
+        </div>
+    </div>
+
+    <!-- Cargar Supabase desde CDN usando UMD -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
+        
+        // Verificar que Supabase esté cargado
+        if (typeof supabase === 'undefined') {
+            console.error('Supabase no se pudo cargar');
+            document.getElementById('message').innerHTML = '<div class="error-message">Error: No se pudo cargar el sistema de autenticación</div>';
+        } else {
+            // Crear cliente de Supabase
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            // Referencias a elementos del DOM
+            const registerForm = document.getElementById('register-form');
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Función para mostrar mensajes
+            const showMessage = (message, type) => {
+                messageDiv.innerHTML = `<div class="${type}-message">${message}</div>`;
+            };
+
+            // Función para limpiar mensajes
+            const clearMessage = () => {
+                messageDiv.innerHTML = '';
+            };
+
+            // Verificar si ya hay una sesión activa
+            const checkExistingSession = async () => {
+                try {
+                    const { data: { session }, error } = await supabaseClient.auth.getSession();
+                    if (session && !error) {
+                        // Usuario ya autenticado, redirigir al portal
+                        window.location.href = 'index.html';
+                    }
+                } catch (error) {
+                    console.error('Error al verificar sesión existente:', error);
+                }
+            };
+
+            // Manejar el envío del formulario
+            registerForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                
+                // Limpiar mensajes anteriores
+                clearMessage();
+                
+                // Deshabilitar botón para evitar múltiples envíos
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Registrando...';
+                
+                // Obtener datos del formulario
+                const fullName = registerForm.full_name.value.trim();
+                const email = registerForm.email.value.trim();
+                const password = registerForm.password.value;
+                
+                // Validaciones básicas
+                if (!fullName) {
+                    showMessage('Por favor, ingresa tu nombre completo.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Registrarse';
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    showMessage('La contraseña debe tener al menos 6 caracteres.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Registrarse';
+                    return;
+                }
+                
+                try {
+                    // Intentar registrar usuario
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                full_name: fullName
+                            }
+                        }
+                    });
+                    
+                    if (error) {
+                        let errorMessage = 'Error al registrar: ';
+                        
+                        // Personalizar mensajes de error comunes
+                        switch (error.message) {
+                            case 'User already registered':
+                                errorMessage += 'Ya existe una cuenta con este correo electrónico.';
+                                break;
+                            case 'Invalid email':
+                                errorMessage += 'El formato del correo electrónico no es válido.';
+                                break;
+                            case 'Password should be at least 6 characters':
+                                errorMessage += 'La contraseña debe tener al menos 6 caracteres.';
+                                break;
+                            default:
+                                errorMessage += error.message;
+                        }
+                        
+                        showMessage(errorMessage, 'error');
+                    } else if (data.user) {
+                        // Registro exitoso
+                        if (data.user.email_confirmed_at) {
+                            // Email ya confirmado, redirigir directamente
+                            showMessage('¡Registro exitoso! Redirigiendo...', 'success');
+                            setTimeout(() => {
+                                window.location.href = 'index.html';
+                            }, 1500);
+                        } else {
+                            // Email necesita confirmación
+                            showMessage('¡Registro exitoso! Por favor, revisa tu correo electrónico para confirmar tu cuenta y luego inicia sesión.', 'success');
+                            registerForm.reset();
+                            
+                            // Redirigir al login después de un delay
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 3000);
+                        }
+                        
+                        // Intentar crear perfil en la tabla profiles (opcional)
+                        try {
+                            const { error: profileError } = await supabaseClient
+                                .from('profiles')
+                                .insert([{ 
+                                    id: data.user.id, 
+                                    full_name: fullName,
+                                    email: email
+                                }]);
+                            
+                            if (profileError) {
+                                console.warn('No se pudo crear el perfil:', profileError);
+                                // No mostramos este error al usuario ya que el registro fue exitoso
+                            }
+                        } catch (profileError) {
+                            console.warn('Error al crear perfil:', profileError);
+                            // No interrumpir el flujo de registro por esto
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error inesperado:', error);
+                    showMessage('Error inesperado. Por favor, intenta de nuevo.', 'error');
+                } finally {
+                    // Rehabilitar botón
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Registrarse';
+                }
+            });
+
+            // Ejecutar verificación cuando el DOM esté listo
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', checkExistingSession);
             } else {
-                messageDiv.textContent = '¡Registro exitoso! Por favor, inicia sesión.';
-                messageDiv.className = 'success-message';
-                registerForm.reset(); 
+                checkExistingSession();
             }
         }
-    });
-</script>
+    </script>
+</body>
+</html>
