@@ -673,17 +673,11 @@
                 </div>
                 
                 <nav class="sidebar-nav">
-                    <a href="index.html" class="active">
+                    <a href="#" class="active">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
                         </svg>
                         <span>Dashboard</span>
-                    </a>
-                    <a href="profile.html">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                        <span>Mi Perfil</span>
                     </a>
                 </nav>
                 <div class="sidebar-footer">
@@ -711,7 +705,7 @@
                         <div class="tool-card-content">
                             <h3>Catálogo Interactivo</h3>
                             <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
-                            <a href="https://catalogo.4millones.com/" target="_blank" rel="noopener noreferrer" class="btn" id="catalog-link">
+                            <a href="https://catalogo.4millones.com/" target="_blank" rel="noopener noreferrer" class="btn">
                                 Abrir Catálogo
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
@@ -727,7 +721,7 @@
                         <div class="tool-card-content">
                             <h3>Modelo de Negocio</h3>
                             <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
-                            <a href="https://oportunidad.4millones.com/" target="_blank" rel="noopener noreferrer" class="btn" id="opportunity-link">
+                            <a href="https://oportunidad.4millones.com/" target="_blank" rel="noopener noreferrer" class="btn">
                                 Abrir Presentación
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
@@ -778,18 +772,11 @@
         const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
         
-        // Variables globales
-        let currentUser = null;
-        let userProfile = null;
-        let isAuthChecked = false;
-        let isRedirecting = false;
-        
         // Referencias a elementos del DOM
         const loadingDiv = document.getElementById('loading');
         const mainContentDiv = document.getElementById('main-content');
         const errorContentDiv = document.getElementById('error-content');
         const userEmailDiv = document.getElementById('user-email');
-        const welcomeTitleDiv = document.getElementById('welcome-title');
         
         // Verificar que Supabase esté cargado
         if (typeof supabase === 'undefined') {
@@ -812,144 +799,44 @@
                 mainContentDiv.style.display = 'block';
                 errorContentDiv.style.display = 'none';
             }
-
-            // Función para cargar el perfil del usuario
-            const loadUserProfile = async () => {
-                try {
-                    // Obtener perfil de la tabla profiles
-                    const { data: profile, error } = await supabaseClient
-                        .from('profiles')
-                        .select('*')
-                        .eq('id', currentUser.id)
-                        .single();
-                    
-                    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-                        console.error('Error al cargar perfil:', error);
-                        return null;
-                    }
-                    
-                    if (profile) {
-                        userProfile = profile;
-                        console.log('Perfil cargado:', profile);
-                        return profile;
-                    } else {
-                        // No existe perfil, usar datos básicos
-                        userProfile = {
-                            id: currentUser.id,
-                            email: currentUser.email,
-                            full_name: currentUser.user_metadata?.full_name || 'Usuario'
-                        };
-                        console.log('Perfil no encontrado, usando datos básicos');
-                        return userProfile;
-                    }
-                } catch (error) {
-                    console.error('Error inesperado al cargar perfil:', error);
-                    return null;
-                }
-            };
-
-            // Función para personalizar la interfaz
-            const personalizeInterface = async () => {
-                // Cargar perfil del usuario
-                const profile = await loadUserProfile();
-                
-                if (profile && profile.full_name) {
-                    // Personalizar mensaje de bienvenida
-                    welcomeTitleDiv.textContent = `Bienvenido, ${profile.full_name}`;
-                }
-                
-                // Personalizar enlaces de herramientas con ID del usuario
-                const catalogLink = document.getElementById('catalog-link');
-                const opportunityLink = document.getElementById('opportunity-link');
-                
-                if (currentUser && currentUser.id) {
-                    // Actualizar enlace del catálogo
-                    const catalogUrl = new URL(catalogLink.href);
-                    catalogUrl.searchParams.set('socio', currentUser.id);
-                    catalogLink.href = catalogUrl.toString();
-                    
-                    // Actualizar enlace de la oportunidad
-                    const opportunityUrl = new URL(opportunityLink.href);
-                    opportunityUrl.searchParams.set('socio', currentUser.id);
-                    opportunityLink.href = opportunityUrl.toString();
-                    
-                    console.log('Enlaces personalizados:', {
-                        catalog: catalogLink.href,
-                        opportunity: opportunityLink.href
-                    });
-                }
-            };
             
-            // Función MEJORADA del "Guardia de Seguridad" (sin bucles)
+            // Función del "Guardia de Seguridad"
             const checkAuth = async () => {
-                // Evitar múltiples verificaciones simultáneas
-                if (isAuthChecked || isRedirecting) {
-                    console.log('Verificación de auth ya en progreso...');
-                    return;
-                }
-                
                 try {
-                    isAuthChecked = true;
-                    console.log('Iniciando verificación de autenticación...');
-                    
                     const { data: { session }, error } = await supabaseClient.auth.getSession();
                     
                     if (error) {
                         console.error('Error al verificar sesión:', error);
-                        isRedirecting = true;
                         window.location.href = 'login.html';
                         return;
                     }
                     
-                    if (!session || !session.user) {
+                    if (!session) {
                         // No hay sesión activa, redirigir al login
-                        console.log('No hay sesión activa, redirigiendo al login...');
-                        isRedirecting = true;
                         window.location.href = 'login.html';
                     } else {
-                        // Usuario autenticado
-                        currentUser = session.user;
-                        console.log('Usuario autenticado exitosamente:', currentUser.email);
+                        // Usuario autenticado, mostrar contenido
+                        console.log('Usuario autenticado:', session.user.email);
                         
                         // Actualizar UI con información del usuario
-                        userEmailDiv.textContent = currentUser.email;
-                        
-                        // Personalizar interfaz
-                        await personalizeInterface();
+                        userEmailDiv.textContent = session.user.email;
                         
                         // Mostrar contenido principal
                         showMainContent();
                     }
                 } catch (error) {
-                    console.error('Error inesperado en verificación de auth:', error);
-                    isRedirecting = true;
+                    console.error('Error inesperado:', error);
                     window.location.href = 'login.html';
-                } finally {
-                    // No resetear isAuthChecked para evitar verificaciones múltiples
-                    console.log('Verificación de auth completada');
                 }
             };
 
             // Función para cerrar sesión
             window.logout = async () => {
-                if (isRedirecting) return;
-                
                 try {
-                    isRedirecting = true;
-                    console.log('Cerrando sesión...');
-                    
                     const { error } = await supabaseClient.auth.signOut();
                     if (error) {
                         console.error('Error al cerrar sesión:', error);
-                    } else {
-                        console.log('Sesión cerrada exitosamente');
                     }
-                    
-                    // Limpiar variables
-                    currentUser = null;
-                    userProfile = null;
-                    
-                    // Redirigir al login
                     window.location.href = 'login.html';
                 } catch (error) {
                     console.error('Error inesperado al cerrar sesión:', error);
@@ -957,37 +844,12 @@
                 }
             };
 
-            // Verificar el estado del DOM y ejecutar verificación UNA SOLA VEZ
-            const initializeApp = () => {
-                if (!isAuthChecked && !isRedirecting) {
-                    console.log('Inicializando aplicación...');
-                    checkAuth();
-                } else {
-                    console.log('Aplicación ya inicializada o redirigiendo...');
-                }
-            };
-
             // Ejecutar verificación cuando el DOM esté listo
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initializeApp);
+                document.addEventListener('DOMContentLoaded', checkAuth);
             } else {
-                // DOM ya está listo, ejecutar inmediatamente
-                initializeApp();
+                checkAuth();
             }
-            
-            // Listener para cambios de estado de autenticación
-            supabaseClient.auth.onAuthStateChange((event, session) => {
-                console.log('Evento de auth detectado:', event, session?.user?.email);
-                
-                // Solo manejar cambios si no estamos ya redirigiendo
-                if (!isRedirecting) {
-                    if (event === 'SIGNED_OUT' && window.location.pathname.includes('index.html')) {
-                        console.log('Usuario deslogueado, redirigiendo...');
-                        isRedirecting = true;
-                        window.location.href = 'login.html';
-                    }
-                }
-            });
         }
     </script>
 </body>
