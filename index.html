@@ -176,103 +176,90 @@
     <!-- Cargar Supabase desde CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    <!-- Scripts modulares - SINTAXIS CORREGIDA -->
+    <!-- Script modular limpio -->
     <script type="module">
-        import { initializeSupabase, authGuard, getUserProfile, logoutUser, getPersonalizedLinks } from './assets/js/auth.js';
-        import { showLoading, showMainContent, showError, formatUserName } from './assets/js/utils.js';
+        // Importar funciones necesarias
+        import {
+            initializeSupabase,
+            authGuard,
+            getUserProfile,
+            logoutUser,
+            getPersonalizedLinks
+        } from './assets/js/auth.js';
+
+        import {
+            showLoading,
+            showMainContent,
+            showError,
+            formatUserName
+        } from './assets/js/utils.js';
+
         import { MESSAGES } from './assets/js/config.js';
 
-        // Verificar que Supabase esté cargado e inicializar
+        console.log('Cargando portal...');
+
+        // Verificar Supabase
         if (typeof supabase === 'undefined') {
-            console.error('Supabase no se pudo cargar');
+            console.error('Supabase no disponible');
             showError(MESSAGES.authRequired);
         } else {
+            // Inicializar aplicación
             try {
                 initializeSupabase();
+                console.log('Supabase inicializado');
 
-                // Referencias a elementos del DOM
-                const userNameEl = document.getElementById('user-name');
-                const userEmailEl = document.getElementById('user-email');
-                const welcomeTextEl = document.getElementById('welcome-text');
-                const mainDescriptionEl = document.getElementById('main-description');
-                const logoutBtn = document.getElementById('logout-btn');
-                const catalogBtn = document.getElementById('catalog-btn');
-                const businessBtn = document.getElementById('business-btn');
-
-                // Función para personalizar el portal
-                const personalizePortal = (profile) => {
-                    const displayName = formatUserName(profile.full_name) || 'Usuario';
-
-                    // Actualizar información del usuario en sidebar
-                    userNameEl.textContent = displayName;
-                    userEmailEl.textContent = profile.email;
-
-                    // Personalizar mensaje de bienvenida
-                    const firstName = displayName.split(' ')[0];
-                    welcomeTextEl.textContent = `Bienvenido, ${firstName}`;
-
-                    // Personalizar descripción principal
-                    mainDescriptionEl.textContent = `${firstName}, aquí tienes tu centro de herramientas premium para construir y acelerar tu activo empresarial con el respaldo de la Organización 4 Millones.`;
-
-                    // Personalizar enlaces de herramientas
-                    const personalizedLinks = getPersonalizedLinks(profile.id);
-                    catalogBtn.href = personalizedLinks.catalog;
-                    businessBtn.href = personalizedLinks.business;
-
-                    console.log('Portal personalizado para:', displayName);
-                    console.log('Enlaces personalizados:', personalizedLinks);
-                };
-
-                // Función principal para cargar el portal
+                // Función principal
                 const loadPortal = async () => {
                     try {
-                        // Verificar autenticación
+                        console.log('Verificando autenticación...');
                         const session = await authGuard(true);
                         if (!session) return;
 
-                        // Obtener perfil del usuario
+                        console.log('Obteniendo perfil...');
                         const profile = await getUserProfile();
                         if (!profile) {
-                            console.error('No se pudo obtener el perfil del usuario');
-                            showError('Error al cargar el perfil del usuario');
+                            showError('Error al cargar perfil');
                             return;
                         }
 
-                        // Personalizar portal con datos del usuario
-                        personalizePortal(profile);
+                        console.log('Personalizando portal...');
+                        // Actualizar UI
+                        const displayName = formatUserName(profile.full_name) || 'Usuario';
+                        document.getElementById('user-name').textContent = displayName;
+                        document.getElementById('user-email').textContent = profile.email;
 
-                        // Mostrar contenido principal
+                        // Personalizar mensaje
+                        const firstName = displayName.split(' ')[0];
+                        document.getElementById('welcome-text').textContent = `Bienvenido, ${firstName}`;
+
+                        // Enlaces personalizados
+                        const links = getPersonalizedLinks(profile.id);
+                        document.getElementById('catalog-btn').href = links.catalog;
+                        document.getElementById('business-btn').href = links.business;
+
+                        console.log('Portal cargado para:', displayName);
                         showMainContent();
 
                     } catch (error) {
                         console.error('Error al cargar portal:', error);
-                        showError('Error al cargar el portal');
+                        showError('Error al cargar portal');
                     }
                 };
 
-                // Manejar logout
-                logoutBtn.addEventListener('click', (e) => {
+                // Event listeners
+                document.getElementById('logout-btn').addEventListener('click', (e) => {
                     e.preventDefault();
-                    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                    if (confirm('¿Cerrar sesión?')) {
                         logoutUser();
                     }
                 });
 
-                // Agregar event listeners para tracking de clics en herramientas
-                catalogBtn.addEventListener('click', () => {
-                    console.log('Usuario accedió al Catálogo Interactivo');
-                });
-
-                businessBtn.addEventListener('click', () => {
-                    console.log('Usuario accedió al Modelo de Negocio');
-                });
-
-                // Inicializar portal
+                // Inicializar
                 loadPortal();
 
             } catch (error) {
-                console.error('Error al inicializar portal:', error);
-                showError('Error al cargar la aplicación. Recarga la página.');
+                console.error('Error de inicialización:', error);
+                showError('Error al inicializar');
             }
         }
     </script>

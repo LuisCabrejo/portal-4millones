@@ -15,10 +15,10 @@ export const APP_CONFIG = {
     name: 'Organización 4 Millones',
     version: '1.0.0',
     routes: {
-        login: '/auth/login.html',
-        register: '/auth/register.html',
-        portal: '/index.html',
-        profile: '/pages/profile.html'
+        login: './auth/login.html',
+        register: './auth/register.html',
+        portal: './index.html',
+        profile: './pages/profile.html'
     },
     tools: {
         catalog: 'https://catalogo.4millones.com/',

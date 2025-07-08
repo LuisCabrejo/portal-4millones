@@ -1,231 +1,238 @@
-import { MESSAGES } from './config.js';
+import { SUPABASE_CONFIG, APP_CONFIG, MESSAGES } from './config.js';
+import { showMessage, updateButton, handleAuthError } from './utils.js';
 
-// Funciones de UI compartidas
-export const showMessage = (message, type, containerId = 'message') => {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = `<div class="${type}-message">${message}</div>`;
+// Cliente de Supabase
+let supabaseClient;
+
+// Inicializar Supabase
+export const initializeSupabase = () => {
+    if (typeof supabase === 'undefined') {
+        throw new Error(MESSAGES.authRequired);
     }
+    supabaseClient = supabase.createClient(
+        SUPABASE_CONFIG.url,
+        SUPABASE_CONFIG.anonKey,
+        SUPABASE_CONFIG.options
+    );
+    return supabaseClient;
 };
 
-export const clearMessage = (containerId = 'message') => {
-    const container = document.getElementById(containerId);
-    if (container) {
-        container.innerHTML = '';
+// Obtener cliente de Supabase
+export const getSupabaseClient = () => {
+    if (!supabaseClient) {
+        return initializeSupabase();
     }
+    return supabaseClient;
 };
 
-export const updateButton = (button, loading, text) => {
-    if (!button) return;
-
-    button.disabled = loading;
-    if (loading) {
-        button.innerHTML = `<span class="loading-spinner"></span>${text}`;
-    } else {
-        button.innerHTML = text;
-    }
-};
-
-// Validaciones comunes
-export const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
-};
-
-export const validateName = (name) => {
-    return name.trim().length >= 2;
-};
-
-export const validatePassword = (password) => {
-    return password.length >= 6;
-};
-
-export const validateWhatsApp = (whatsapp) => {
-    // Validar que sea un número de teléfono válido (opcional)
-    if (!whatsapp.trim()) return true; // Campo opcional
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    return phoneRegex.test(whatsapp.replace(/\s/g, ''));
-};
-
-export const validateURL = (url) => {
-    if (!url.trim()) return true; // Campo opcional
+// Guardia de seguridad mejorado - SIN bucles infinitos
+export const authGuard = async (redirectOnFail = true) => {
     try {
-        new URL(url);
-        return true;
-    } catch {
+        const client = getSupabaseClient();
+        const { data: { session }, error } = await client.auth.getSession();
+
+        if (error) {
+            console.error('Error al verificar sesión:', error);
+            if (redirectOnFail) {
+                window.location.href = APP_CONFIG.routes.login;
+            }
+            return null;
+        }
+
+        if (!session) {
+            if (redirectOnFail) {
+                window.location.href = APP_CONFIG.routes.login;
+            }
+            return null;
+        }
+
+        return session;
+    } catch (error) {
+        console.error('Error inesperado en authGuard:', error);
+        if (redirectOnFail) {
+            window.location.href = APP_CONFIG.routes.login;
+        }
+        return null;
+    }
+};
+
+// Verificar sesión existente (para páginas de login/register)
+export const checkExistingSession = async (showLink = false) => {
+    try {
+        const client = getSupabaseClient();
+        const { data: { session }, error } = await client.auth.getSession();
+
+        if (error) {
+            console.error('Error al verificar sesión:', error);
+            return false;
+        }
+
+        if (session) {
+            if (showLink) {
+                showMessage(`${MESSAGES.sessionActive} <a href="${APP_CONFIG.routes.portal}" style="color: inherit; text-decoration: underline;">Ir al Portal</a>`, 'success');
+            } else {
+                showMessage(`${MESSAGES.sessionActive} Redirigiendo...`, 'success');
+                setTimeout(() => {
+                    window.location.href = APP_CONFIG.routes.portal;
+                }, 1000);
+            }
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        console.error('Error al verificar sesión existente:', error);
         return false;
     }
 };
 
-// Función para validar campo en tiempo real
-export const validateField = (input, validationDiv, isValid, successMessage, errorMessage) => {
-    const validationElement = document.getElementById(validationDiv);
-    if (!validationElement) return;
+// Obtener perfil completo del usuario
+export const getUserProfile = async () => {
+    try {
+        const session = await authGuard(false);
+        if (!session) return null;
 
-    if (isValid) {
-        input.classList.remove('invalid');
-        input.classList.add('valid');
-        validationElement.textContent = successMessage;
-        validationElement.className = 'validation-message success';
-    } else {
-        input.classList.remove('valid');
-        input.classList.add('invalid');
-        validationElement.textContent = errorMessage;
-        validationElement.className = 'validation-message error';
-    }
-};
+        const client = getSupabaseClient();
 
-// Manejo centralizado de errores de autenticación
-export const handleAuthError = (error) => {
-    let errorMessage = MESSAGES.errors.networkError;
+        // Intentar obtener perfil de la tabla profiles
+        const { data: profile, error } = await client
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
 
-    if (error?.message) {
-        switch (error.message) {
-            case 'Invalid login credentials':
-                errorMessage = MESSAGES.errors.invalidCredentials;
-                break;
-            case 'User already registered':
-                errorMessage = MESSAGES.errors.userExists;
-                break;
-            case 'Email not confirmed':
-                errorMessage = MESSAGES.errors.emailNotConfirmed;
-                break;
-            case 'Invalid email':
-                errorMessage = MESSAGES.errors.invalidEmail;
-                break;
-            case 'Password should be at least 6 characters':
-                errorMessage = MESSAGES.errors.shortPassword;
-                break;
-            case 'Too many requests':
-                errorMessage = 'Demasiados intentos. Intenta de nuevo en unos minutos.';
-                break;
-            case 'User not found':
-                errorMessage = 'No existe una cuenta con este correo electrónico.';
-                break;
-            case 'Signup is disabled':
-                errorMessage = 'El registro está temporalmente deshabilitado.';
-                break;
-            default:
-                errorMessage = `Error: ${error.message}`;
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+            console.error('Error al obtener perfil:', error);
         }
-    }
 
-    return errorMessage;
-};
-
-// Función para mostrar estado de carga
-export const showLoading = (show = true, containerId = 'loading') => {
-    const loadingElement = document.getElementById(containerId);
-    const mainContent = document.getElementById('main-content');
-
-    if (loadingElement) {
-        loadingElement.style.display = show ? 'flex' : 'none';
-    }
-
-    if (mainContent) {
-        mainContent.style.display = show ? 'none' : 'block';
+        // Combinar datos de auth con perfil
+        return {
+            id: session.user.id,
+            email: session.user.email,
+            full_name: profile?.full_name || session.user.user_metadata?.full_name || '',
+            whatsapp: profile?.whatsapp || '',
+            affiliate_link: profile?.affiliate_link || '',
+            created_at: session.user.created_at,
+            ...profile
+        };
+    } catch (error) {
+        console.error('Error inesperado al obtener perfil:', error);
+        return null;
     }
 };
 
-// Función para mostrar contenido principal
-export const showMainContent = () => {
-    showLoading(false);
-    const errorContent = document.getElementById('error-content');
-    if (errorContent) {
-        errorContent.style.display = 'none';
-    }
-};
+// Actualizar perfil del usuario
+export const updateUserProfile = async (profileData) => {
+    try {
+        const session = await authGuard(false);
+        if (!session) throw new Error('No hay sesión activa');
 
-// Función para mostrar error
-export const showError = (message = 'Error de autenticación') => {
-    showLoading(false);
-    const mainContent = document.getElementById('main-content');
-    const errorContent = document.getElementById('error-content');
+        const client = getSupabaseClient();
 
-    if (mainContent) {
-        mainContent.style.display = 'none';
-    }
+        // Preparar datos para actualizar
+        const updateData = {
+            id: session.user.id,
+            email: session.user.email,
+            full_name: profileData.full_name || session.user.user_metadata?.full_name || '',
+            whatsapp: profileData.whatsapp || '',
+            affiliate_link: profileData.affiliate_link || '',
+            updated_at: new Date().toISOString()
+        };
 
-    if (errorContent) {
-        errorContent.style.display = 'flex';
-        const errorText = errorContent.querySelector('p');
-        if (errorText) {
-            errorText.textContent = message;
+        // Usar upsert para crear o actualizar
+        const { data, error } = await client
+            .from('profiles')
+            .upsert(updateData, { onConflict: 'id' })
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
         }
+
+        return data;
+    } catch (error) {
+        console.error('Error al actualizar perfil:', error);
+        throw error;
     }
 };
 
-// Función para formatear texto
-export const formatUserName = (name) => {
-    if (!name) return 'Usuario';
+// Función de login
+export const loginUser = async (email, password) => {
+    try {
+        const client = getSupabaseClient();
+        const { data, error } = await client.auth.signInWithPassword({
+            email: email.trim(),
+            password: password
+        });
 
-    return name
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-};
+        if (error) {
+            throw error;
+        }
 
-// Función para formatear número de WhatsApp
-export const formatWhatsApp = (phone) => {
-    if (!phone) return '';
-
-    // Remover todos los caracteres no numéricos excepto el +
-    let cleaned = phone.replace(/[^\d+]/g, '');
-
-    // Si no tiene +, agregar +57 (Colombia) por defecto
-    if (!cleaned.startsWith('+')) {
-        cleaned = '+57' + cleaned;
-    }
-
-    return cleaned;
-};
-
-// Función para crear elementos de partículas
-export const createParticles = (container, count = 9) => {
-    if (!container) return;
-
-    for (let i = 0; i < count; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = `${(i + 1) * (100 / (count + 1))}%`;
-        particle.style.animationDelay = `${i * 0.8}s`;
-        container.appendChild(particle);
+        return data;
+    } catch (error) {
+        throw error;
     }
 };
 
-// Función para inicializar validaciones en tiempo real
-export const initializeFormValidation = (formConfig) => {
-    formConfig.forEach(({ inputId, validationId, validator, successMsg, errorMsg }) => {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-
-        input.addEventListener('input', () => {
-            const value = input.value;
-            const isValid = validator(value);
-
-            if (value.length > 0) {
-                validateField(input, validationId, isValid, successMsg, errorMsg);
-            } else {
-                input.classList.remove('valid', 'invalid');
-                const validationElement = document.getElementById(validationId);
-                if (validationElement) {
-                    validationElement.textContent = '';
+// Función de registro
+export const registerUser = async (fullName, email, password) => {
+    try {
+        const client = getSupabaseClient();
+        const { data, error } = await client.auth.signUp({
+            email: email.trim(),
+            password: password,
+            options: {
+                data: {
+                    full_name: fullName.trim()
                 }
             }
         });
-    });
+
+        if (error) {
+            throw error;
+        }
+
+        // Intentar crear perfil si el registro fue exitoso
+        if (data.user) {
+            try {
+                await updateUserProfile({
+                    full_name: fullName.trim(),
+                    whatsapp: '',
+                    affiliate_link: ''
+                });
+            } catch (profileError) {
+                console.warn('No se pudo crear el perfil inicial:', profileError);
+                // No interrumpir el flujo de registro por esto
+            }
+        }
+
+        return data;
+    } catch (error) {
+        throw error;
+    }
 };
 
-// Función para limpiar validaciones
-export const clearValidations = (inputIds) => {
-    inputIds.forEach(inputId => {
-        const input = document.getElementById(inputId);
-        if (input) {
-            input.classList.remove('valid', 'invalid');
+// Función de logout
+export const logoutUser = async () => {
+    try {
+        const client = getSupabaseClient();
+        const { error } = await client.auth.signOut();
+        if (error) {
+            console.error('Error al cerrar sesión:', error);
         }
-    });
+        window.location.href = APP_CONFIG.routes.login;
+    } catch (error) {
+        console.error('Error inesperado al cerrar sesión:', error);
+        window.location.href = APP_CONFIG.routes.login;
+    }
+};
 
-    document.querySelectorAll('.validation-message').forEach(el => {
-        el.textContent = '';
-    });
+// Generar enlaces personalizados
+export const getPersonalizedLinks = (userId) => {
+    return {
+        catalog: `${APP_CONFIG.tools.catalog}?socio=${userId}`,
+        business: `${APP_CONFIG.tools.business}?socio=${userId}`
+    };
 };
