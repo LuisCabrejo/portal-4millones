@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Organización 4 Millones</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- CSS modular -->
+    <link rel="stylesheet" href="../assets/css/main.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body>
+    <!-- Loading state -->
+    <div id="loading" class="loading-container">
+        <div class="loading-spinner large"></div>
+        <p>Cargando perfil...</p>
+    </div>
+
+    <!-- Main content (hidden initially) -->
+    <div id="main-content" style="display: none;">
+        <div class="particles">
+            <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+            <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+            <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+            <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+            <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+            <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
+            <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
+            <div class="particle" style="left: 80%; animation-delay: 7s;"></div>
+            <div class="particle" style="left: 90%; animation-delay: 0.5s;"></div>
+        </div>
+
+        <div class="main-container">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-container">
+                        <h2>Proyecto 4 Millones</h2>
+                        <p>Centro de Socios Estratégicos</p>
+                    </div>
+                </div>
+
+                <!-- User info section -->
+                <div class="user-info" id="user-info">
+                    <div class="user-name" id="user-name">Cargando...</div>
+                    <div class="user-email" id="user-email">Cargando...</div>
+                    <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <a href="../index.html">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="profile.html" class="active">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <span>Mi Perfil</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    &copy; 2025 - 4millones.com
+                </div>
+            </aside>
+
+            <main class="content-area">
+                <div class="profile-container">
+                    <!-- Header del perfil -->
+                    <div class="profile-header animate-slide-up">
+                        <div class="profile-avatar" id="profile-avatar">
+                            4M
+                        </div>
+                        <h1 id="profile-title">Mi Perfil</h1>
+                        <p id="profile-subtitle">Gestiona tu información personal y configuraciones</p>
+                    </div>
+
+                    <!-- Formulario de perfil -->
+                    <div class="profile-form animate-stagger">
+                        <h2>Información Personal</h2>
+
+                        <div id="message"></div>
+
+                        <form id="profile-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="full_name">Nombre Completo</label>
+                                    <input type="text" id="full_name" name="full_name" required readonly>
+                                    <div id="name-validation" class="validation-message"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email">Correo Electrónico</label>
+                                    <input type="email" id="email" name="email" required readonly>
+                                    <div id="email-validation" class="validation-message"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="whatsapp">Número de WhatsApp</label>
+                                    <input type="tel" id="whatsapp" name="whatsapp" placeholder="+57 300 123 4567" autocomplete="tel">
+                                    <div class="validation-message">
+                                        <small>Este número se usará para que los clientes te contacten directamente</small>
+                                    </div>
+                                    <div id="whatsapp-validation" class="validation-message"></div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="affiliate_link">Enlace de Afiliación de Gano Excel</label>
+                                    <input type="url" id="affiliate_link" name="affiliate_link" placeholder="https://tu-enlace-gano.com" autocomplete="url">
+                                    <div class="validation-message">
+                                        <small>Tu enlace personalizado de Gano Excel para referencias</small>
+                                    </div>
+                                    <div id="affiliate-validation" class="validation-message"></div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn" id="submit-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; margin-right: 8px;">
+                                    <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                                </svg>
+                                Guardar Cambios
+                            </button>
+                        </form>
+
+                        <!-- Información adicional -->
+                        <div class="mt-5">
+                            <h3 style="color: var(--dark-text); margin-bottom: 20px;">Enlaces Personalizados</h3>
+                            <div class="card">
+                                <p style="margin-bottom: 15px; color: var(--text-secondary);">
+                                    Cuando compartas las herramientas del portal, se incluirá automáticamente tu información:
+                                </p>
+                                <div style="background: var(--bg-light); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
+                                    <strong>Catálogo:</strong>
+                                    <span id="catalog-link">https://catalogo.4millones.com/?socio=tu-id</span>
+                                </div>
+                                <div style="background: var(--bg-light); padding: 15px; border-radius: 12px;">
+                                    <strong>Modelo de Negocio:</strong>
+                                    <span id="business-link">https://oportunidad.4millones.com/?socio=tu-id</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Error state -->
+    <div id="error-content" class="error-container" style="display: none;">
+        <h2>Error de Autenticación</h2>
+        <p>No se pudo cargar tu perfil. Por favor, inicia sesión nuevamente.</p>
+        <button onclick="window.location.href='../auth/login.html'" class="btn">Ir al Login</button>
+    </div>
+
+    <!-- Cargar Supabase desde CDN -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+    <!-- Scripts modulares -->
+    <script type="module">
+        import { initializeSupabase, authGuard, getUserProfile, updateUserProfile, logoutUser, getPersonalizedLinks } from '../assets/js/auth.js';
+        import { showMessage, clearMessage, updateButton, validateWhatsApp, validateURL, showLoading, showMainContent, showError, formatUserName, formatWhatsApp, validateField } from '../assets/js/utils.js';
+        import { MESSAGES } from '../assets/js/config.js';
+
+        // Verificar que Supabase esté cargado e inicializar
+        if (typeof supabase === 'undefined') {
+            console.error('Supabase no se pudo cargar');
+            showError(MESSAGES.authRequired);
+        } else {
+            try {
+                initializeSupabase();
+
+                // Referencias a elementos del DOM
+                const profileForm = document.getElementById('profile-form');
+                const submitBtn = document.getElementById('submit-btn');
+                const logoutBtn = document.getElementById('logout-btn');
+
+                // Campos del formulario
+                const fullNameInput = document.getElementById('full_name');
+                const emailInput = document.getElementById('email');
+                const whatsappInput = document.getElementById('whatsapp');
+                const affiliateLinkInput = document.getElementById('affiliate_link');
+
+                // Elementos de información del usuario
+                const userNameEl = document.getElementById('user-name');
+                const userEmailEl = document.getElementById('user-email');
+                const profileAvatarEl = document.getElementById('profile-avatar');
+                const profileTitleEl = document.getElementById('profile-title');
+
+                // Enlaces personalizados
+                const catalogLinkEl = document.getElementById('catalog-link');
+                const businessLinkEl = document.getElementById('business-link');
+
+                // Función para cargar datos del perfil
+                const loadProfile = async () => {
+                    try {
+                        showLoading(true);
+
+                        const profile = await getUserProfile();
+                        if (!profile) {
+                            showError('No se pudo cargar el perfil');
+                            return;
+                        }
+
+                        // Actualizar información en sidebar
+                        const displayName = formatUserName(profile.full_name) || 'Usuario';
+                        userNameEl.textContent = displayName;
+                        userEmailEl.textContent = profile.email;
+
+                        // Actualizar avatar con iniciales
+                        const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
+                        profileAvatarEl.textContent = initials;
+
+                        // Actualizar título del perfil
+                        profileTitleEl.textContent = `Perfil de ${displayName}`;
+
+                        // Llenar formulario
+                        fullNameInput.value = profile.full_name || '';
+                        emailInput.value = profile.email || '';
+                        whatsappInput.value = profile.whatsapp || '';
+                        affiliateLinkInput.value = profile.affiliate_link || '';
+
+                        // Mostrar enlaces personalizados
+                        const personalizedLinks = getPersonalizedLinks(profile.id);
+                        catalogLinkEl.textContent = personalizedLinks.catalog;
+                        businessLinkEl.textContent = personalizedLinks.business;
+
+                        showMainContent();
+
+                    } catch (error) {
+                        console.error('Error al cargar perfil:', error);
+                        showError('Error al cargar el perfil');
+                    }
+                };
+
+                // Validación en tiempo real para WhatsApp
+                whatsappInput.addEventListener('input', () => {
+                    const whatsapp = whatsappInput.value;
+                    if (whatsapp.length > 0) {
+                        const isValid = validateWhatsApp(whatsapp);
+                        validateField(
+                            whatsappInput,
+                            'whatsapp-validation',
+                            isValid,
+                            '✓ Número válido',
+                            'Formato inválido (ej: +57 300 123 4567)'
+                        );
+                    } else {
+                        whatsappInput.classList.remove('valid', 'invalid');
+                        document.getElementById('whatsapp-validation').innerHTML = '<small>Este número se usará para que los clientes te contacten directamente</small>';
+                    }
+                });
+
+                // Validación en tiempo real para enlace de afiliación
+                affiliateLinkInput.addEventListener('input', () => {
+                    const url = affiliateLinkInput.value;
+                    if (url.length > 0) {
+                        const isValid = validateURL(url);
+                        validateField(
+                            affiliateLinkInput,
+                            'affiliate-validation',
+                            isValid,
+                            '✓ URL válida',
+                            'URL inválida (ej: https://tu-enlace-gano.com)'
+                        );
+                    } else {
+                        affiliateLinkInput.classList.remove('valid', 'invalid');
+                        document.getElementById('affiliate-validation').innerHTML = '<small>Tu enlace personalizado de Gano Excel para referencias</small>';
+                    }
+                });
+
+                // Formatear WhatsApp al salir del campo
+                whatsappInput.addEventListener('blur', () => {
+                    if (whatsappInput.value.trim()) {
+                        whatsappInput.value = formatWhatsApp(whatsappInput.value);
+                    }
+                });
+
+                // Manejar logout
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                        logoutUser();
+                    }
+                });
+
+                // Manejar envío del formulario
+                profileForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    clearMessage();
+                    updateButton(submitBtn, true, 'Guardando...');
+
+                    // Obtener datos del formulario
+                    const whatsapp = whatsappInput.value.trim();
+                    const affiliateLink = affiliateLinkInput.value.trim();
+
+                    // Validar datos
+                    if (whatsapp && !validateWhatsApp(whatsapp)) {
+                        showMessage('Por favor, ingresa un número de WhatsApp válido', 'error');
+                        updateButton(submitBtn, false, 'Guardar Cambios');
+                        return;
+                    }
+
+                    if (affiliateLink && !validateURL(affiliateLink)) {
+                        showMessage('Por favor, ingresa una URL válida para tu enlace de afiliación', 'error');
+                        updateButton(submitBtn, false, 'Guardar Cambios');
+                        return;
+                    }
+
+                    try {
+                        // Actualizar perfil
+                        await updateUserProfile({
+                            full_name: fullNameInput.value.trim(),
+                            whatsapp: formatWhatsApp(whatsapp),
+                            affiliate_link: affiliateLink
+                        });
+
+                        showMessage(MESSAGES.profileUpdated, 'success');
+
+                        // Actualizar nombre en la UI si cambió
+                        const displayName = formatUserName(fullNameInput.value.trim());
+                        userNameEl.textContent = displayName;
+                        profileTitleEl.textContent = `Perfil de ${displayName}`;
+
+                        const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
+                        profileAvatarEl.textContent = initials;
+
+                    } catch (error) {
+                        console.error('Error al actualizar perfil:', error);
+                        showMessage('Error al actualizar el perfil. Intenta de nuevo.', 'error');
+                    } finally {
+                        updateButton(submitBtn, false, 'Guardar Cambios');
+                    }
+                });
+
+                // Verificar autenticación y cargar perfil
+                const initializePage = async () => {
+                    const session = await authGuard(true);
+                    if (session) {
+                        await loadProfile();
+                    }
+                };
+
+                // Inicializar página
+                initializePage();
+
+            } catch (error) {
+                console.error('Error al inicializar página de perfil:', error);
+                showError('Error al cargar la aplicación. Recarga la página.');
+            }
+        }
+    </script>
+</body>
+</html>

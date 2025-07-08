@@ -1,0 +1,260 @@
+/* Estilos específicos para páginas de autenticación */
+
+/* Layout de autenticación */
+.auth-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-container {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 24px;
+    box-shadow: var(--shadow-medium);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+    border: 1px solid rgba(13, 27, 42, 0.05);
+    transition: all 0.3s ease;
+}
+
+.auth-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(13, 27, 42, 0.15);
+}
+
+/* Header de marca */
+.brand-header {
+    margin-bottom: 40px;
+}
+
+.brand-logo {
+    background: var(--gradient-primary);
+    color: white;
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-weight: 900;
+    font-size: 1.8rem;
+    box-shadow: var(--shadow-soft);
+    transition: all 0.3s ease;
+}
+
+.brand-logo:hover {
+    transform: scale(1.05);
+}
+
+.brand-logo.register {
+    background: var(--gradient-accent);
+}
+
+.auth-container h1 {
+    color: var(--dark-text);
+    font-weight: 800;
+    font-size: 2.2rem;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.auth-container .subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Formularios de autenticación */
+.auth-form {
+    margin-bottom: 30px;
+}
+
+.auth-form .form-group {
+    text-align: left;
+}
+
+.password-requirements {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    text-align: left;
+}
+
+/* Enlace de contraseña olvidada */
+.forgot-password {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.forgot-password a {
+    color: var(--secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* Enlaces de registro/login */
+.auth-link {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 1px solid var(--border-light);
+}
+
+.auth-link p {
+    color: var(--text-secondary);
+    margin-bottom: 15px;
+    font-size: 0.95rem;
+}
+
+.auth-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 12px 24px;
+    border: 2px solid var(--primary);
+    border-radius: 10px;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.auth-link a:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Partículas específicas para auth */
+.auth-particles .particle {
+    width: 3px;
+    height: 3px;
+    animation: float 6s infinite ease-in-out;
+}
+
+/* Estados de validación mejorados */
+.form-group input.valid {
+    border-color: var(--success);
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%2328a745'%3E%3Cpath d='M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 45px;
+}
+
+.form-group input.invalid {
+    border-color: var(--error);
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23dc3545'%3E%3Cpath d='M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z'/%3E%3Cpath d='M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 45px;
+}
+
+/* Animaciones específicas para auth */
+.auth-container {
+    animation: slideInScale 0.6s ease-out;
+}
+
+@keyframes slideInScale {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Botones específicos de auth */
+.auth-submit-btn {
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+/* Responsividad para auth */
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 40px 30px;
+        margin: 10px;
+    }
+
+    .auth-container h1 {
+        font-size: 1.9rem;
+    }
+
+    .brand-logo {
+        width: 70px;
+        height: 70px;
+        font-size: 1.6rem;
+    }
+
+    .auth-particles .particle {
+        width: 2px;
+        height: 2px;
+    }
+}
+
+/* Estados de hover mejorados */
+.auth-container .btn:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-strong);
+}
+
+.auth-container .form-group input:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px rgba(224, 177, 203, 0.15), var(--shadow-soft);
+}
+
+/* Indicadores de fuerza de contraseña */
+.password-strength {
+    margin-top: 8px;
+    height: 4px;
+    background: var(--border-light);
+    border-radius: 2px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.password-strength-bar {
+    height: 100%;
+    border-radius: 2px;
+    transition: all 0.5s ease;
+    width: 0%;
+}
+
+.password-strength-bar.weak {
+    background: var(--error);
+    width: 33%;
+}
+
+.password-strength-bar.medium {
+    background: var(--warning);
+    width: 66%;
+}
+
+.password-strength-bar.strong {
+    background: var(--success);
+    width: 100%;
+}
