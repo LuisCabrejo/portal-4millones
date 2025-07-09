@@ -8,7 +8,7 @@
     z-index: 2;
 }
 
-/* FIX CRÍTICO: Header para mobile con menú de usuario */
+/* 📱 FIX CRÍTICO: Header Mobile con control mejorado para auth pages */
 .mobile-header {
     display: none;
     position: fixed;
@@ -21,6 +21,18 @@
     z-index: 1000;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     backdrop-filter: blur(10px);
+}
+
+/* 🚨 FIX CRÍTICO: Ocultar header mobile en páginas de autenticación */
+body[data-page="auth"] .mobile-header,
+body.auth-body .mobile-header {
+    display: none !important;
+}
+
+/* 🚨 FIX CRÍTICO: Sin padding-top en páginas de auth */
+body[data-page="auth"],
+body.auth-body {
+    padding-top: 0 !important;
 }
 
 .mobile-header-content {
@@ -592,16 +604,28 @@
     margin-bottom: 25px;
 }
 
-/* FIX CRÍTICO: Responsive mobile - SIN FOOTER, CON HEADER */
+/* 📱 FIX CRÍTICO: Responsive mobile mejorado - SIN FOOTER, CON HEADER CONTROLADO */
 @media (max-width: 768px) {
-    /* Mostrar header mobile */
+    /* 🚨 FIX: Mostrar header mobile SOLO en portal (no en auth) */
     .mobile-header {
         display: block;
     }
 
-    /* Ajustar body para el header */
-    body {
+    /* 🚨 FIX: Ocultar completamente en páginas de auth */
+    body[data-page="auth"] .mobile-header,
+    body.auth-body .mobile-header {
+        display: none !important;
+    }
+
+    /* Ajustar body para el header SOLO en portal */
+    body:not([data-page="auth"]):not(.auth-body) {
         padding-top: 70px;
+    }
+
+    /* Auth pages sin padding-top */
+    body[data-page="auth"],
+    body.auth-body {
+        padding-top: 0 !important;
     }
 
     /* Ocultar sidebar en mobile */
@@ -652,7 +676,8 @@
         padding: 12px 15px;
     }
 
-    body {
+    /* Solo ajustar padding en páginas que NO son auth */
+    body:not([data-page="auth"]):not(.auth-body) {
         padding-top: 65px;
     }
 
@@ -670,4 +695,19 @@
     .content-area {
         padding: 20px 15px;
     }
+}
+
+/* 🚨 FIX ADICIONAL: Prevenir parpadeos en auth pages */
+body.auth-body .mobile-header,
+body[data-page="auth"] .mobile-header {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    display: none !important;
+}
+
+/* Asegurar que auth pages no tengan espaciado superior */
+.auth-body,
+body[data-page="auth"] {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
 }

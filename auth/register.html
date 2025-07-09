@@ -12,8 +12,11 @@
     <!-- CSS modular -->
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/auth.css">
+    <!-- 📱 FIX CRÍTICO: Incluir components.css para control de header mobile -->
+    <link rel="stylesheet" href="../assets/css/components.css">
 </head>
-<body class="auth-body">
+<!-- 🚨 FIX CRÍTICO: Clase auth-body y data-page para ocultar header mobile -->
+<body class="auth-body" data-page="auth">
     <div class="particles auth-particles">
         <div class="particle" style="left: 15%; animation-delay: 0s;"></div>
         <div class="particle" style="left: 30%; animation-delay: 1.5s;"></div>
@@ -22,6 +25,16 @@
         <div class="particle" style="left: 75%; animation-delay: 6s;"></div>
         <div class="particle" style="left: 90%; animation-delay: 7.5s;"></div>
     </div>
+
+    <!-- 📱 FIX: Header mobile incluido pero controlado por CSS para ocultarse en auth -->
+    <header class="mobile-header">
+        <div class="mobile-header-content">
+            <div class="mobile-logo">4 Millones</div>
+            <div class="mobile-user-menu">
+                <button class="mobile-user-toggle">👤</button>
+            </div>
+        </div>
+    </header>
 
     <div class="auth-container">
         <div class="brand-header">
@@ -72,8 +85,23 @@
     <!-- Scripts modulares -->
     <script type="module">
         import { initializeSupabase, checkExistingSession, registerUser } from '../assets/js/auth.js';
-        import { showMessage, clearMessage, updateButton, validateEmail, validateName, validatePassword, handleAuthError, initializeFormValidation, clearValidations, createParticles } from '../assets/js/utils.js';
+        import {
+            showMessage,
+            clearMessage,
+            updateButton,
+            validateEmail,
+            validateName,
+            validatePassword,
+            handleAuthError,
+            initializeFormValidation,
+            clearValidations,
+            createParticles,
+            initializeMobileHeaderControl  // 📱 FIX: Importar control de header
+        } from '../assets/js/utils.js';
         import { MESSAGES } from '../assets/js/config.js';
+
+        // 📱 FIX CRÍTICO: Inicializar control de header mobile
+        initializeMobileHeaderControl();
 
         // Verificar que Supabase esté cargado e inicializar
         if (typeof supabase === 'undefined') {

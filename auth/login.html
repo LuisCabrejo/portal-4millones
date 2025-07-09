@@ -12,8 +12,11 @@
     <!-- CSS modular -->
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/auth.css">
+    <!-- 📱 FIX CRÍTICO: Incluir components.css para control de header mobile -->
+    <link rel="stylesheet" href="../assets/css/components.css">
 </head>
-<body class="auth-body">
+<!-- 🚨 FIX CRÍTICO: Clase auth-body y data-page para ocultar header mobile -->
+<body class="auth-body" data-page="auth">
     <div class="particles auth-particles">
         <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
         <div class="particle" style="left: 25%; animation-delay: 1s;"></div>
@@ -22,6 +25,16 @@
         <div class="particle" style="left: 70%; animation-delay: 4s;"></div>
         <div class="particle" style="left: 85%; animation-delay: 5s;"></div>
     </div>
+
+    <!-- 📱 FIX: Header mobile incluido pero controlado por CSS para ocultarse en auth -->
+    <header class="mobile-header">
+        <div class="mobile-header-content">
+            <div class="mobile-logo">4 Millones</div>
+            <div class="mobile-user-menu">
+                <button class="mobile-user-toggle">👤</button>
+            </div>
+        </div>
+    </header>
 
     <div class="auth-container">
         <div class="brand-header">
@@ -66,11 +79,23 @@
     <!-- Scripts modulares -->
     <script type="module">
         import { initializeSupabase, checkExistingSession, loginUser } from '../assets/js/auth.js';
-        import { showMessage, clearMessage, updateButton, validateEmail, handleAuthError, initializeFormValidation, createParticles } from '../assets/js/utils.js';
+        import {
+            showMessage,
+            clearMessage,
+            updateButton,
+            validateEmail,
+            handleAuthError,
+            initializeFormValidation,
+            createParticles,
+            initializeMobileHeaderControl  // 📱 FIX: Importar control de header
+        } from '../assets/js/utils.js';
         import { MESSAGES } from '../assets/js/config.js';
 
         // Variables para controlar redirecciones
         let isRedirecting = false;
+
+        // 📱 FIX CRÍTICO: Inicializar control de header mobile
+        initializeMobileHeaderControl();
 
         // Verificar que Supabase esté cargado e inicializar
         if (typeof supabase === 'undefined') {

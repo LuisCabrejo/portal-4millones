@@ -13,8 +13,9 @@
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
 </head>
-<body>
-    <!-- FIX CRÍTICO: Header Mobile (No Footer) -->
+<!-- 📱 FIX: Marcado como página de portal (no auth) -->
+<body data-page="portal">
+    <!-- 📱 FIX CRÍTICO: Header Mobile Controlado -->
     <header class="mobile-header">
         <div class="mobile-header-content">
             <div class="mobile-logo">4 Millones</div>
@@ -110,7 +111,7 @@
                 <div id="message" style="display: none; margin-bottom: 20px;"></div>
 
                 <div class="tools-grid">
-                    <!-- Card Catálogo - FIX CRÍTICO: WhatsApp SIN DESTINATARIO -->
+                    <!-- 🚨 FIX CRÍTICO: Card Catálogo con WhatsApp API corregida -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');">
                             <div class="status-badge available">Disponible</div>
@@ -118,7 +119,7 @@
                         <div class="tool-card-content">
                             <h3>Catálogo Interactivo</h3>
                             <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
-                            <!-- FIX CRÍTICO: WhatsApp sin destinatario -->
+                            <!-- 🚨 FIX CRÍTICO: WhatsApp con API corregida (no web.whatsapp.com) -->
                             <button class="btn" id="catalog-share-btn" data-tool="catalog" data-action="share" data-url="https://catalogo.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
                                 📱 Compartir via WhatsApp
                             </button>
@@ -131,7 +132,7 @@
                         </div>
                     </div>
 
-                    <!-- Card Modelo de Negocio - FIX CRÍTICO: WhatsApp SIN DESTINATARIO -->
+                    <!-- 🚨 FIX CRÍTICO: Card Modelo de Negocio con WhatsApp API corregida -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');">
                             <div class="status-badge available">Disponible</div>
@@ -139,7 +140,7 @@
                         <div class="tool-card-content">
                             <h3>Modelo de Negocio</h3>
                             <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
-                            <!-- FIX CRÍTICO: WhatsApp sin destinatario -->
+                            <!-- 🚨 FIX CRÍTICO: WhatsApp con API corregida (no web.whatsapp.com) -->
                             <button class="btn" id="business-share-btn" data-tool="business" data-action="share" data-url="https://oportunidad.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
                                 📱 Compartir via WhatsApp
                             </button>
@@ -231,10 +232,11 @@
             formatUserName,
             showMessage,
             clearMessage,
-            shareToolWithWhatsApp,
+            shareToolWithWhatsApp,  // 🚨 FIX: Ahora usa api.whatsapp.com
             openTool,
             logout,
-            TOOL_CONFIG
+            TOOL_CONFIG,
+            initializeMobileHeaderControl  // 📱 FIX: Control de header mobile
         } from './assets/js/utils.js';
 
         import { MESSAGES } from './assets/js/config.js';
@@ -244,6 +246,9 @@
         let isLoading = false;
 
         console.log('🚀 Cargando portal...');
+
+        // 📱 FIX CRÍTICO: Inicializar control de header mobile
+        initializeMobileHeaderControl();
 
         // Verificar Supabase
         if (typeof supabase === 'undefined') {
@@ -386,14 +391,15 @@
 
                             try {
                                 if (action === 'share') {
-                                    // FIX CRÍTICO: Compartir via WhatsApp SIN DESTINATARIO
+                                    // 🚨 FIX CRÍTICO: Compartir via WhatsApp con API.WHATSAPP.COM
                                     target.textContent = 'Generando enlace...';
 
                                     if (!toolUrl) {
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    console.log(`📱 Compartiendo ${toolType} con URL:`, toolUrl);
+                                    console.log(`📱 Compartiendo ${toolType} con URL (fix aplicado):`, toolUrl);
+                                    console.log('🚨 Usando api.whatsapp.com para selección de contacto');
                                     shareToolWithWhatsApp(toolType, currentUserProfile, toolUrl);
 
                                 } else if (action === 'open') {

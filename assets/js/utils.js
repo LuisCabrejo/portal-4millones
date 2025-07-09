@@ -230,7 +230,7 @@ export const clearValidations = (inputIds) => {
     });
 };
 
-// ===== FUNCIONES CRÍTICAS CORREGIDAS =====
+// ===== 🚀 FUNCIONES CRÍTICAS CORREGIDAS - WHATSAPP API FIX =====
 
 /**
  * FIX CRÍTICO: Generar URL personalizada con parámetro socio
@@ -258,11 +258,12 @@ export const generatePersonalizedUrl = (baseUrl, userId) => {
 };
 
 /**
- * FIX CRÍTICO: Generar enlace de WhatsApp SIN DESTINATARIO
+ * 🚨 FIX CRÍTICO WHATSAPP: Generar enlace de WhatsApp SIN DESTINATARIO
+ * CAMBIO PRINCIPAL: web.whatsapp.com → api.whatsapp.com
  * Solo con el mensaje y enlace personalizado
  * @param {string} message - Mensaje a enviar
  * @param {string} toolUrl - URL de la herramienta personalizada
- * @returns {string} URL de WhatsApp web sin destinatario
+ * @returns {string} URL de WhatsApp API sin destinatario
  */
 export const generateWhatsAppShareUrl = (message, toolUrl) => {
     try {
@@ -275,10 +276,12 @@ export const generateWhatsAppShareUrl = (message, toolUrl) => {
         // Codificar mensaje para URL
         const encodedMessage = encodeURIComponent(fullMessage);
 
-        // FIX CRÍTICO: WhatsApp Web SIN destinatario
-        const whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+        // 🚨 FIX CRÍTICO: api.whatsapp.com (NO web.whatsapp.com)
+        // Esto permite al usuario elegir contacto sin login
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
 
-        console.log('📱 URL WhatsApp generada (sin destinatario):', whatsappUrl);
+        console.log('✅ URL WhatsApp API generada (fix aplicado):', whatsappUrl);
+        console.log('📱 Usuario podrá elegir contacto sin login previo');
         return whatsappUrl;
     } catch (error) {
         console.error('❌ Error al generar URL de WhatsApp:', error);
@@ -287,8 +290,8 @@ export const generateWhatsAppShareUrl = (message, toolUrl) => {
 };
 
 /**
- * FIX CRÍTICO: Compartir herramienta via WhatsApp SIN DESTINATARIO
- * El usuario elige a quién enviar el enlace
+ * 🚨 FIX CRÍTICO WHATSAPP: Compartir herramienta via WhatsApp SIN DESTINATARIO
+ * Ahora usa api.whatsapp.com para selección de contacto sin login
  * @param {string} toolType - Tipo de herramienta ('catalog' o 'business')
  * @param {Object} userProfile - Perfil del usuario con ID
  * @param {string} baseUrl - URL base de la herramienta
@@ -324,7 +327,7 @@ export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
             whatsappMessage = '¡Hola! Te comparto información sobre Gano Excel: ';
         }
 
-        // FIX CRÍTICO: Crear enlace de WhatsApp SIN DESTINATARIO
+        // 🚨 FIX CRÍTICO: Crear enlace de WhatsApp con API.WHATSAPP.COM
         const whatsappUrl = generateWhatsAppShareUrl(whatsappMessage, personalizedUrl);
 
         if (whatsappUrl === '#') {
@@ -332,13 +335,13 @@ export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
             return;
         }
 
-        // Abrir WhatsApp Web (sin destinatario)
-        console.log('🚀 Abriendo WhatsApp Web:', whatsappUrl);
+        // Abrir WhatsApp API (permite elegir contacto)
+        console.log('🚀 Abriendo WhatsApp API (fix aplicado):', whatsappUrl);
         window.open(whatsappUrl, '_blank');
 
-        // Mostrar confirmación
+        // Mostrar confirmación específica del fix
         const toolName = toolType === 'catalog' ? 'Catálogo' : 'Modelo de Negocio';
-        showMessage(`✅ ${toolName} listo para compartir via WhatsApp`, 'success');
+        showMessage(`✅ ${toolName} listo para compartir - Elige tu contacto en WhatsApp`, 'success');
 
     } catch (error) {
         console.error('❌ Error al compartir herramienta:', error);
@@ -485,6 +488,64 @@ export const TOOL_CONFIG = {
         url: 'https://oportunidad.4millones.com/',
         description: 'Oportunidad de negocio con Gano Excel'
     }
+};
+
+// ===== 📱 FIX CRÍTICO HEADER MOBILE AUTH PAGES =====
+
+/**
+ * 📱 FIX CRÍTICO: Detectar si estamos en página de autenticación
+ * Para evitar mostrar header mobile en auth pages
+ * @returns {boolean} true si estamos en página de auth
+ */
+export const isAuthPage = () => {
+    const currentPath = window.location.pathname;
+    return currentPath.includes('/auth/') ||
+           currentPath.includes('login.html') ||
+           currentPath.includes('register.html') ||
+           currentPath.includes('reset-password.html');
+};
+
+/**
+ * 📱 FIX CRÍTICO: Controlar visibilidad del header mobile
+ * Ocultar en páginas de auth, mostrar en portal
+ */
+export const controlMobileHeader = () => {
+    const mobileHeader = document.querySelector('.mobile-header');
+
+    if (mobileHeader) {
+        if (isAuthPage()) {
+            // Ocultar en páginas de auth
+            mobileHeader.style.display = 'none';
+            document.body.style.paddingTop = '0';
+            console.log('📱 Header mobile oculto en página de auth');
+        } else {
+            // Mostrar en otras páginas
+            if (window.innerWidth <= 768) {
+                mobileHeader.style.display = 'block';
+                document.body.style.paddingTop = '70px';
+                console.log('📱 Header mobile mostrado en portal');
+            }
+        }
+    }
+};
+
+/**
+ * 📱 FIX CRÍTICO: Inicializar control de header mobile
+ * Llamar en todas las páginas para control automático
+ */
+export const initializeMobileHeaderControl = () => {
+    // Control inicial
+    controlMobileHeader();
+
+    // Control en cambio de orientación
+    window.addEventListener('orientationchange', () => {
+        setTimeout(controlMobileHeader, 100);
+    });
+
+    // Control en redimensión
+    window.addEventListener('resize', controlMobileHeader);
+
+    console.log('📱 Control de header mobile inicializado');
 };
 
 // ===== EXPLICACIÓN DE CÓDIGOS UUID =====
