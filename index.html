@@ -82,7 +82,11 @@
                     </div>
                 </header>
 
+                <!-- Mensajes del sistema -->
+                <div id="message" style="display: none; margin-bottom: 20px;"></div>
+
                 <div class="tools-grid">
+                    <!-- Card Catálogo - FIX CRÍTICO: WhatsApp Integration -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');">
                             <div class="status-badge available">Disponible</div>
@@ -90,15 +94,20 @@
                         <div class="tool-card-content">
                             <h3>Catálogo Interactivo</h3>
                             <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
-                            <a href="#" target="_blank" rel="noopener noreferrer" class="btn" id="catalog-btn" data-default="https://catalogo.4millones.com/">
-                                Abrir Catálogo
+                            <!-- FIX CRÍTICO: Botones con funcionalidad WhatsApp -->
+                            <button class="btn" id="catalog-share-btn" data-tool="catalog" data-action="share" style="margin-bottom: 10px; background: #25D366; border: none;">
+                                📱 Compartir via WhatsApp
+                            </button>
+                            <button class="btn" id="catalog-open-btn" data-tool="catalog" data-action="open" data-url="https://catalogo.4millones.com/">
+                                🔗 Abrir Catálogo
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
                                 </svg>
-                            </a>
+                            </button>
                         </div>
                     </div>
 
+                    <!-- Card Modelo de Negocio - FIX CRÍTICO: WhatsApp Integration -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');">
                             <div class="status-badge available">Disponible</div>
@@ -106,12 +115,16 @@
                         <div class="tool-card-content">
                             <h3>Modelo de Negocio</h3>
                             <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
-                            <a href="#" target="_blank" rel="noopener noreferrer" class="btn" id="business-btn" data-default="https://oportunidad.4millones.com/">
-                                Abrir Presentación
+                            <!-- FIX CRÍTICO: Botones con funcionalidad WhatsApp -->
+                            <button class="btn" id="business-share-btn" data-tool="business" data-action="share" style="margin-bottom: 10px; background: #25D366; border: none;">
+                                📱 Compartir via WhatsApp
+                            </button>
+                            <button class="btn" id="business-open-btn" data-tool="business" data-action="open" data-url="https://oportunidad.4millones.com/">
+                                🔗 Abrir Presentación
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
                                     <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
                                 </svg>
-                            </a>
+                            </button>
                         </div>
                     </div>
 
@@ -176,9 +189,9 @@
     <!-- Cargar Supabase desde CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    <!-- Script modular limpio -->
+    <!-- Script modular con funcionalidad WhatsApp integrada -->
     <script type="module">
-        // Importar funciones necesarias
+        // Importar funciones necesarias - FIX CRÍTICO
         import {
             initializeSupabase,
             authGuard,
@@ -191,10 +204,20 @@
             showLoading,
             showMainContent,
             showError,
-            formatUserName
+            formatUserName,
+            showMessage,
+            clearMessage,
+            shareToolWithWhatsApp,
+            openTool,
+            logout,
+            TOOL_CONFIG
         } from './assets/js/utils.js';
 
         import { MESSAGES } from './assets/js/config.js';
+
+        // Variables globales
+        let currentUserProfile = null;
+        let isLoading = false;
 
         console.log('Cargando portal...');
 
@@ -222,9 +245,12 @@
                             return;
                         }
 
+                        // Guardar perfil globalmente
+                        currentUserProfile = profile;
+
                         console.log('Personalizando portal...');
                         // Actualizar UI
-                        const displayName = formatUserName(profile.full_name) || 'Usuario';
+                        const displayName = formatUserName(profile.full_name) || formatUserName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim()) || 'Usuario';
                         document.getElementById('user-name').textContent = displayName;
                         document.getElementById('user-email').textContent = profile.email;
 
@@ -232,12 +258,12 @@
                         const firstName = displayName.split(' ')[0];
                         document.getElementById('welcome-text').textContent = `Bienvenido, ${firstName}`;
 
-                        // Enlaces personalizados
-                        const links = getPersonalizedLinks(profile.id);
-                        document.getElementById('catalog-btn').href = links.catalog;
-                        document.getElementById('business-btn').href = links.business;
-
                         console.log('Portal cargado para:', displayName);
+                        console.log('Perfil completo:', currentUserProfile);
+
+                        // Configurar event listeners después de cargar el perfil
+                        setupEventListeners();
+
                         showMainContent();
 
                     } catch (error) {
@@ -246,13 +272,78 @@
                     }
                 };
 
-                // Event listeners
-                document.getElementById('logout-btn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (confirm('¿Cerrar sesión?')) {
-                        logoutUser();
-                    }
-                });
+                // FIX CRÍTICO: Event listeners con funcionalidad WhatsApp completa
+                const setupEventListeners = () => {
+                    // Logout button
+                    document.getElementById('logout-btn').addEventListener('click', (e) => {
+                        e.preventDefault();
+                        if (confirm('¿Cerrar sesión?')) {
+                            logout(); // Usa la función corregida de utils.js
+                        }
+                    });
+
+                    // Event listener para todos los botones de herramientas
+                    document.addEventListener('click', async (event) => {
+                        const target = event.target;
+
+                        // Prevenir múltiples clics durante loading
+                        if (isLoading) return;
+
+                        // Verificar si es un botón de herramienta
+                        if (target.dataset.action && target.dataset.tool) {
+                            event.preventDefault();
+
+                            const action = target.dataset.action;
+                            const toolType = target.dataset.tool;
+
+                            if (!currentUserProfile) {
+                                showMessage('Error: Perfil de usuario no disponible', 'error');
+                                return;
+                            }
+
+                            isLoading = true;
+                            const originalText = target.textContent;
+                            target.disabled = true;
+
+                            try {
+                                if (action === 'share') {
+                                    // FIX CRÍTICO: Compartir via WhatsApp
+                                    target.textContent = 'Generando enlace...';
+
+                                    const toolConfig = TOOL_CONFIG[toolType];
+                                    if (!toolConfig) {
+                                        throw new Error('Configuración de herramienta no encontrada');
+                                    }
+
+                                    shareToolWithWhatsApp(toolType, currentUserProfile, toolConfig.url);
+
+                                } else if (action === 'open') {
+                                    // Abrir herramienta directamente
+                                    target.textContent = 'Abriendo...';
+
+                                    const toolUrl = target.dataset.url;
+                                    if (!toolUrl) {
+                                        throw new Error('URL de herramienta no encontrada');
+                                    }
+
+                                    openTool(toolUrl, currentUserProfile);
+                                }
+
+                            } catch (error) {
+                                console.error(`Error en acción ${action}:`, error);
+                                showMessage(`Error al ${action === 'share' ? 'compartir' : 'abrir'} herramienta`, 'error');
+                            } finally {
+                                setTimeout(() => {
+                                    target.textContent = originalText;
+                                    target.disabled = false;
+                                    isLoading = false;
+                                }, 2000);
+                            }
+                        }
+                    });
+
+                    console.log('Event listeners configurados correctamente');
+                };
 
                 // Inicializar
                 loadPortal();
@@ -262,6 +353,22 @@
                 showError('Error al inicializar');
             }
         }
+
+        // Manejo de errores de red
+        window.addEventListener('online', () => {
+            showMessage('Conexión restaurada', 'success', 3000);
+        });
+
+        window.addEventListener('offline', () => {
+            showMessage('Sin conexión a internet', 'error', 5000);
+        });
+
+        // Manejar orientación en móvil
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        });
     </script>
 </body>
 </html>
