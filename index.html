@@ -14,6 +14,30 @@
     <link rel="stylesheet" href="assets/css/components.css">
 </head>
 <body>
+    <!-- FIX CRÍTICO: Header Mobile (No Footer) -->
+    <header class="mobile-header">
+        <div class="mobile-header-content">
+            <div class="mobile-logo">4 Millones</div>
+            <div class="mobile-user-menu">
+                <button class="mobile-user-toggle" id="mobile-user-toggle">
+                    👤
+                </button>
+                <div class="mobile-user-dropdown" id="mobile-user-dropdown">
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-name" id="mobile-user-name">Usuario</div>
+                        <div class="mobile-user-email" id="mobile-user-email">email@ejemplo.com</div>
+                    </div>
+                    <div class="mobile-menu-item" id="mobile-menu-profile">
+                        ⚙️ Mi Perfil
+                    </div>
+                    <div class="mobile-menu-item logout" id="mobile-menu-logout">
+                        🚪 Cerrar Sesión
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <!-- Loading state -->
     <div id="loading" class="loading-container">
         <div class="loading-spinner large"></div>
@@ -43,26 +67,11 @@
                     </div>
                 </div>
 
-                <!-- User info section - Desktop -->
+                <!-- User info section - Solo Desktop -->
                 <div class="user-info" id="user-info">
                     <div class="user-name" id="user-name">Cargando...</div>
                     <div class="user-email" id="user-email">Cargando...</div>
                     <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
-                </div>
-
-                <!-- FIX CRÍTICO: Menú de usuario para mobile -->
-                <div class="user-menu" id="user-menu">
-                    <button class="user-menu-toggle" id="user-menu-toggle">
-                        👤
-                    </button>
-                    <div class="user-menu-dropdown" id="user-menu-dropdown">
-                        <div class="user-menu-item" id="menu-profile">
-                            ⚙️ Mi Perfil
-                        </div>
-                        <div class="user-menu-item logout" id="menu-logout">
-                            🚪 Cerrar Sesión
-                        </div>
-                    </div>
                 </div>
 
                 <nav class="sidebar-nav">
@@ -101,7 +110,7 @@
                 <div id="message" style="display: none; margin-bottom: 20px;"></div>
 
                 <div class="tools-grid">
-                    <!-- Card Catálogo - FIX CRÍTICO: WhatsApp Integration -->
+                    <!-- Card Catálogo - FIX CRÍTICO: WhatsApp SIN DESTINATARIO -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');">
                             <div class="status-badge available">Disponible</div>
@@ -109,7 +118,7 @@
                         <div class="tool-card-content">
                             <h3>Catálogo Interactivo</h3>
                             <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
-                            <!-- FIX CRÍTICO: Botones con funcionalidad WhatsApp -->
+                            <!-- FIX CRÍTICO: WhatsApp sin destinatario -->
                             <button class="btn" id="catalog-share-btn" data-tool="catalog" data-action="share" data-url="https://catalogo.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
                                 📱 Compartir via WhatsApp
                             </button>
@@ -122,7 +131,7 @@
                         </div>
                     </div>
 
-                    <!-- Card Modelo de Negocio - FIX CRÍTICO: WhatsApp Integration -->
+                    <!-- Card Modelo de Negocio - FIX CRÍTICO: WhatsApp SIN DESTINATARIO -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');">
                             <div class="status-badge available">Disponible</div>
@@ -130,7 +139,7 @@
                         <div class="tool-card-content">
                             <h3>Modelo de Negocio</h3>
                             <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
-                            <!-- FIX CRÍTICO: Botones con funcionalidad WhatsApp -->
+                            <!-- FIX CRÍTICO: WhatsApp sin destinatario -->
                             <button class="btn" id="business-share-btn" data-tool="business" data-action="share" data-url="https://oportunidad.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
                                 📱 Compartir via WhatsApp
                             </button>
@@ -204,9 +213,9 @@
     <!-- Cargar Supabase desde CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    <!-- Script modular con todas las correcciones -->
+    <!-- Script con todas las correcciones -->
     <script type="module">
-        // Importar funciones necesarias - FIX CRÍTICO
+        // Importar funciones necesarias
         import {
             initializeSupabase,
             authGuard,
@@ -265,23 +274,26 @@
                         console.log('📋 Perfil cargado:', {
                             id: profile.id,
                             email: profile.email,
-                            whatsapp: profile.whatsapp,
                             name: profile.full_name || profile.first_name
                         });
 
                         console.log('🎨 Personalizando portal...');
-                        // Actualizar UI
+                        // Actualizar UI Desktop
                         const displayName = formatUserName(profile.full_name) ||
                                           formatUserName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim()) ||
                                           'Usuario';
                         document.getElementById('user-name').textContent = displayName;
                         document.getElementById('user-email').textContent = profile.email;
 
+                        // FIX CRÍTICO: Actualizar UI Mobile
+                        document.getElementById('mobile-user-name').textContent = displayName;
+                        document.getElementById('mobile-user-email').textContent = profile.email;
+
                         // Personalizar mensaje
                         const firstName = displayName.split(' ')[0];
                         document.getElementById('welcome-text').textContent = `Bienvenido, ${firstName}`;
 
-                        // Configurar event listeners después de cargar el perfil
+                        // Configurar event listeners
                         setupEventListeners();
 
                         console.log('✅ Portal cargado para:', displayName);
@@ -293,9 +305,9 @@
                     }
                 };
 
-                // FIX CRÍTICO: Event listeners con funcionalidad WhatsApp completa
+                // FIX CRÍTICO: Event listeners completos
                 const setupEventListeners = () => {
-                    // FIX: Desktop logout button
+                    // Desktop logout button
                     const logoutBtn = document.getElementById('logout-btn');
                     if (logoutBtn) {
                         logoutBtn.addEventListener('click', (e) => {
@@ -307,46 +319,48 @@
                     }
 
                     // FIX CRÍTICO: Mobile user menu
-                    const userMenuToggle = document.getElementById('user-menu-toggle');
-                    const userMenuDropdown = document.getElementById('user-menu-dropdown');
-                    const menuLogout = document.getElementById('menu-logout');
-                    const menuProfile = document.getElementById('menu-profile');
+                    const mobileUserToggle = document.getElementById('mobile-user-toggle');
+                    const mobileUserDropdown = document.getElementById('mobile-user-dropdown');
+                    const mobileMenuLogout = document.getElementById('mobile-menu-logout');
+                    const mobileMenuProfile = document.getElementById('mobile-menu-profile');
 
-                    if (userMenuToggle && userMenuDropdown) {
+                    if (mobileUserToggle && mobileUserDropdown) {
                         // Toggle menu dropdown
-                        userMenuToggle.addEventListener('click', (e) => {
+                        mobileUserToggle.addEventListener('click', (e) => {
                             e.stopPropagation();
-                            userMenuDropdown.classList.toggle('show');
+                            mobileUserDropdown.classList.toggle('show');
                         });
 
                         // Close menu when clicking outside
                         document.addEventListener('click', () => {
-                            userMenuDropdown.classList.remove('show');
+                            mobileUserDropdown.classList.remove('show');
                         });
 
                         // Prevent closing when clicking inside menu
-                        userMenuDropdown.addEventListener('click', (e) => {
+                        mobileUserDropdown.addEventListener('click', (e) => {
                             e.stopPropagation();
                         });
                     }
 
-                    if (menuLogout) {
-                        menuLogout.addEventListener('click', (e) => {
+                    if (mobileMenuLogout) {
+                        mobileMenuLogout.addEventListener('click', (e) => {
                             e.preventDefault();
+                            mobileUserDropdown.classList.remove('show');
                             if (confirm('¿Cerrar sesión?')) {
                                 logout();
                             }
                         });
                     }
 
-                    if (menuProfile) {
-                        menuProfile.addEventListener('click', (e) => {
+                    if (mobileMenuProfile) {
+                        mobileMenuProfile.addEventListener('click', (e) => {
                             e.preventDefault();
+                            mobileUserDropdown.classList.remove('show');
                             window.location.href = 'pages/profile.html';
                         });
                     }
 
-                    // Event listener para todos los botones de herramientas
+                    // Event listener para botones de herramientas
                     document.addEventListener('click', async (event) => {
                         const target = event.target;
 
@@ -362,7 +376,7 @@
                             const toolUrl = target.dataset.url;
 
                             if (!currentUserProfile) {
-                                showMessage('Error: Perfil de usuario no disponible', 'error');
+                                showMessage('❌ Error: Perfil de usuario no disponible', 'error');
                                 return;
                             }
 
@@ -372,15 +386,14 @@
 
                             try {
                                 if (action === 'share') {
-                                    // FIX CRÍTICO: Compartir via WhatsApp
+                                    // FIX CRÍTICO: Compartir via WhatsApp SIN DESTINATARIO
                                     target.textContent = 'Generando enlace...';
 
                                     if (!toolUrl) {
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    // FIX CRÍTICO: Usar toolUrl del dataset
-                                    console.log(`🔗 Compartiendo ${toolType} con URL:`, toolUrl);
+                                    console.log(`📱 Compartiendo ${toolType} con URL:`, toolUrl);
                                     shareToolWithWhatsApp(toolType, currentUserProfile, toolUrl);
 
                                 } else if (action === 'open') {
@@ -391,13 +404,13 @@
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    console.log(`📂 Abriendo ${toolType} con URL:`, toolUrl);
+                                    console.log(`🔗 Abriendo ${toolType} con URL:`, toolUrl);
                                     openTool(toolUrl, currentUserProfile);
                                 }
 
                             } catch (error) {
                                 console.error(`❌ Error en acción ${action}:`, error);
-                                showMessage(`Error al ${action === 'share' ? 'compartir' : 'abrir'} herramienta`, 'error');
+                                showMessage(`❌ Error al ${action === 'share' ? 'compartir' : 'abrir'} herramienta`, 'error');
                             } finally {
                                 setTimeout(() => {
                                     target.textContent = originalText;

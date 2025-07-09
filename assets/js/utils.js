@@ -235,7 +235,7 @@ export const clearValidations = (inputIds) => {
 /**
  * FIX CRÍTICO: Generar URL personalizada con parámetro socio
  * @param {string} baseUrl - URL base de la herramienta
- * @param {string} userId - ID del usuario/socio
+ * @param {string} userId - ID del usuario/socio (UUID de Supabase)
  * @returns {string} URL con parámetro socio
  */
 export const generatePersonalizedUrl = (baseUrl, userId) => {
@@ -249,87 +249,70 @@ export const generatePersonalizedUrl = (baseUrl, userId) => {
         const url = new URL(baseUrl);
         url.searchParams.set('socio', userId);
         const finalUrl = url.toString();
-        console.log('URL personalizada generada:', finalUrl);
+        console.log('🔗 URL personalizada generada:', finalUrl);
         return finalUrl;
     } catch (error) {
-        console.error('Error al generar URL personalizada:', error);
+        console.error('❌ Error al generar URL personalizada:', error);
         return baseUrl;
     }
 };
 
 /**
- * FIX CRÍTICO: Generar enlace de WhatsApp con mensaje personalizado
- * @param {string} phoneNumber - Número de WhatsApp (con código de país)
+ * FIX CRÍTICO: Generar enlace de WhatsApp SIN DESTINATARIO
+ * Solo con el mensaje y enlace personalizado
  * @param {string} message - Mensaje a enviar
- * @param {string} toolUrl - URL de la herramienta compartida
- * @returns {string} URL de WhatsApp
+ * @param {string} toolUrl - URL de la herramienta personalizada
+ * @returns {string} URL de WhatsApp web sin destinatario
  */
-export const generateWhatsAppUrl = (phoneNumber, message, toolUrl = null) => {
-    // FIX: Validar que phoneNumber sea string
-    if (!phoneNumber || typeof phoneNumber !== 'string') {
-        console.error('Número de WhatsApp debe ser string:', phoneNumber);
-        showMessage('Error: Número de WhatsApp no válido', 'error');
-        return '#';
-    }
-
+export const generateWhatsAppShareUrl = (message, toolUrl) => {
     try {
-        // Limpiar número de teléfono (remover espacios, guiones, etc.)
-        const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
-        console.log('Teléfono limpio:', cleanPhone);
-
-        // Construir mensaje
-        let fullMessage = message || '¡Hola! Me interesa conocer más sobre Gano Excel. ';
+        // Construir mensaje completo
+        let fullMessage = message || '¡Hola! Te comparto información sobre Gano Excel: ';
         if (toolUrl && typeof toolUrl === 'string') {
             fullMessage += toolUrl;
         }
 
         // Codificar mensaje para URL
         const encodedMessage = encodeURIComponent(fullMessage);
-        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
 
-        console.log('URL WhatsApp generada:', whatsappUrl);
+        // FIX CRÍTICO: WhatsApp Web SIN destinatario
+        const whatsappUrl = `https://web.whatsapp.com/send?text=${encodedMessage}`;
+
+        console.log('📱 URL WhatsApp generada (sin destinatario):', whatsappUrl);
         return whatsappUrl;
     } catch (error) {
-        console.error('Error al generar URL de WhatsApp:', error);
-        showMessage('Error al generar enlace de WhatsApp', 'error');
+        console.error('❌ Error al generar URL de WhatsApp:', error);
         return '#';
     }
 };
 
 /**
- * FIX CRÍTICO: Compartir herramienta via WhatsApp con enlace personalizado
+ * FIX CRÍTICO: Compartir herramienta via WhatsApp SIN DESTINATARIO
+ * El usuario elige a quién enviar el enlace
  * @param {string} toolType - Tipo de herramienta ('catalog' o 'business')
- * @param {Object} userProfile - Perfil del usuario con whatsapp y user_id
+ * @param {Object} userProfile - Perfil del usuario con ID
  * @param {string} baseUrl - URL base de la herramienta
  */
 export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
     try {
-        console.log('shareToolWithWhatsApp llamada con:', { toolType, userProfile, baseUrl });
+        console.log('📱 shareToolWithWhatsApp llamada con:', { toolType, userProfile, baseUrl });
 
         // Validar datos requeridos
         if (!userProfile || !userProfile.id) {
-            showMessage('Error: Información de usuario no disponible', 'error');
-            return;
-        }
-
-        // FIX: Verificar que whatsapp sea válido
-        if (!userProfile.whatsapp || typeof userProfile.whatsapp !== 'string') {
-            showMessage('Configura tu WhatsApp en el perfil para compartir herramientas', 'error');
-            setTimeout(() => {
-                window.location.href = 'pages/profile.html';
-            }, 2000);
+            showMessage('❌ Error: Información de usuario no disponible', 'error');
             return;
         }
 
         // FIX: Verificar que baseUrl sea string válida
         if (!baseUrl || typeof baseUrl !== 'string') {
-            console.error('Error: URL base no válida:', baseUrl);
-            showMessage('Error: URL de herramienta no disponible', 'error');
+            console.error('❌ Error: URL base no válida:', baseUrl);
+            showMessage('❌ Error: URL de herramienta no disponible', 'error');
             return;
         }
 
         // FIX CRÍTICO: Generar URL personalizada con parámetro socio
         const personalizedUrl = generatePersonalizedUrl(baseUrl, userProfile.id);
+        console.log('🔗 URL personalizada:', personalizedUrl);
 
         // Generar mensaje apropiado según el tipo de herramienta
         let whatsappMessage;
@@ -341,29 +324,25 @@ export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
             whatsappMessage = '¡Hola! Te comparto información sobre Gano Excel: ';
         }
 
-        // FIX CRÍTICO: Crear enlace de WhatsApp con URL personalizada
-        const whatsappUrl = generateWhatsAppUrl(
-            userProfile.whatsapp,
-            whatsappMessage,
-            personalizedUrl
-        );
+        // FIX CRÍTICO: Crear enlace de WhatsApp SIN DESTINATARIO
+        const whatsappUrl = generateWhatsAppShareUrl(whatsappMessage, personalizedUrl);
 
         if (whatsappUrl === '#') {
-            showMessage('Error al generar enlace de WhatsApp', 'error');
+            showMessage('❌ Error al generar enlace de WhatsApp', 'error');
             return;
         }
 
-        // Abrir WhatsApp
-        console.log('Abriendo WhatsApp:', whatsappUrl);
+        // Abrir WhatsApp Web (sin destinatario)
+        console.log('🚀 Abriendo WhatsApp Web:', whatsappUrl);
         window.open(whatsappUrl, '_blank');
 
         // Mostrar confirmación
         const toolName = toolType === 'catalog' ? 'Catálogo' : 'Modelo de Negocio';
-        showMessage(`✓ Compartiendo ${toolName} via WhatsApp`, 'success');
+        showMessage(`✅ ${toolName} listo para compartir via WhatsApp`, 'success');
 
     } catch (error) {
-        console.error('Error al compartir herramienta:', error);
-        showMessage('Error al generar enlace de WhatsApp', 'error');
+        console.error('❌ Error al compartir herramienta:', error);
+        showMessage('❌ Error al generar enlace de WhatsApp', 'error');
     }
 };
 
@@ -384,7 +363,7 @@ export const getCorrectRoute = (targetPage) => {
     };
 
     if (!routes[targetPage]) {
-        console.error(`Ruta '${targetPage}' no encontrada`);
+        console.error(`❌ Ruta '${targetPage}' no encontrada`);
         return '/';
     }
 
@@ -414,23 +393,23 @@ export const getCorrectRoute = (targetPage) => {
  */
 export const logout = async () => {
     try {
-        console.log('Iniciando logout...');
+        console.log('🚪 Iniciando logout...');
 
         // FIX CRÍTICO: Verificar que Supabase esté disponible
         if (typeof window.supabase === 'undefined') {
-            console.error('Supabase no está disponible');
+            console.error('❌ Supabase no está disponible');
             // Intentar limpiar localStorage al menos
             try {
                 localStorage.removeItem('supabase.auth.token');
                 sessionStorage.clear();
             } catch (e) {
-                console.error('Error al limpiar storage:', e);
+                console.error('❌ Error al limpiar storage:', e);
             }
         } else {
             // Usar Supabase para cerrar sesión
             const { error } = await window.supabase.auth.signOut();
             if (error) {
-                console.error('Error al cerrar sesión en Supabase:', error);
+                console.error('❌ Error al cerrar sesión en Supabase:', error);
             }
         }
 
@@ -439,21 +418,21 @@ export const logout = async () => {
             localStorage.removeItem('supabase.auth.token');
             sessionStorage.clear();
         } catch (e) {
-            console.error('Error al limpiar storage:', e);
+            console.error('❌ Error al limpiar storage:', e);
         }
 
         // Mostrar mensaje de éxito
-        showMessage('Sesión cerrada correctamente', 'success', 2000);
+        showMessage('✅ Sesión cerrada correctamente', 'success');
 
         // FIX CRÍTICO: Redirección con ruta correcta después de delay
         setTimeout(() => {
             const loginPath = getCorrectRoute('login');
-            console.log('Redirigiendo a:', loginPath);
+            console.log('🔄 Redirigiendo a:', loginPath);
             window.location.href = loginPath;
         }, 1500);
 
     } catch (error) {
-        console.error('Error durante logout:', error);
+        console.error('❌ Error durante logout:', error);
 
         // Aún así intentar redirigir
         setTimeout(() => {
@@ -472,8 +451,8 @@ export const openTool = (baseUrl, userProfile = null) => {
     try {
         // FIX: Verificar que baseUrl sea string
         if (!baseUrl || typeof baseUrl !== 'string') {
-            console.error('Error: URL base no válida:', baseUrl);
-            showMessage('Error: URL de herramienta no disponible', 'error');
+            console.error('❌ Error: URL base no válida:', baseUrl);
+            showMessage('❌ Error: URL de herramienta no disponible', 'error');
             return;
         }
 
@@ -484,13 +463,13 @@ export const openTool = (baseUrl, userProfile = null) => {
         }
 
         // Abrir en nueva pestaña
-        console.log('Abriendo herramienta:', toolUrl);
+        console.log('🔗 Abriendo herramienta:', toolUrl);
         window.open(toolUrl, '_blank');
-        showMessage('✓ Abriendo herramienta', 'success', 2000);
+        showMessage('✅ Abriendo herramienta', 'success');
 
     } catch (error) {
-        console.error('Error al abrir herramienta:', error);
-        showMessage('Error al abrir herramienta', 'error');
+        console.error('❌ Error al abrir herramienta:', error);
+        showMessage('❌ Error al abrir herramienta', 'error');
     }
 };
 
@@ -507,3 +486,17 @@ export const TOOL_CONFIG = {
         description: 'Oportunidad de negocio con Gano Excel'
     }
 };
+
+// ===== EXPLICACIÓN DE CÓDIGOS UUID =====
+
+/**
+ * EXPLICACIÓN: El código que ves (5460d8d0-f3d4-4db0-99ca-48650a41ef57)
+ * es el UUID (Universally Unique Identifier) del usuario en Supabase.
+ *
+ * - Cada usuario registrado tiene un UUID único
+ * - Este UUID es diferente para cada cuenta
+ * - Se usa como parámetro ?socio=UUID para tracking
+ * - Es lo correcto y esperado para identificar al distribuidor
+ *
+ * No necesitas cambiarlo - es el sistema funcionando correctamente.
+ */
