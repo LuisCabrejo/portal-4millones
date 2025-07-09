@@ -1,6 +1,6 @@
 /* Estilos específicos para páginas de autenticación */
 
-/* Layout de autenticación */
+/* Layout de autenticación - FIX CRÍTICO MOBILE SCROLL */
 .auth-body {
     display: flex;
     justify-content: center;
@@ -8,7 +8,9 @@
     min-height: 100vh;
     padding: 20px;
     position: relative;
-    overflow: hidden;
+    /* FIX CRÍTICO: Permitir scroll en mobile y remover overflow hidden */
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .auth-container {
@@ -23,6 +25,9 @@
     z-index: 2;
     border: 1px solid rgba(13, 27, 42, 0.05);
     transition: all 0.3s ease;
+    /* FIX CRÍTICO: Permitir scroll interno si es necesario */
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
 }
 
 .auth-container:hover {
@@ -113,12 +118,14 @@
     text-decoration: underline;
 }
 
-/* Enlaces de registro/login */
+/* Enlaces de registro/login - FIX CRÍTICO MOBILE */
 .auth-link {
     text-align: center;
     margin-top: 30px;
     padding-top: 25px;
     border-top: 1px solid var(--border-light);
+    /* FIX: Asegurar visibilidad en mobile */
+    margin-bottom: 20px;
 }
 
 .auth-link p {
@@ -136,6 +143,10 @@
     border-radius: 10px;
     display: inline-block;
     transition: all 0.3s ease;
+    /* FIX CRÍTICO: Área de toque mínima para mobile */
+    min-height: 44px;
+    min-width: 120px;
+    line-height: 1.2;
 }
 
 .auth-link a:hover {
@@ -193,11 +204,37 @@
     margin-bottom: 25px;
 }
 
-/* Responsividad para auth */
+/* Responsividad para auth - FIX CRÍTICO MOBILE */
+@media (max-width: 768px) {
+    .auth-body {
+        /* FIX: Permitir scroll y alineación superior en tablet */
+        align-items: flex-start;
+        padding: 20px 15px;
+    }
+
+    .auth-container {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        /* FIX: Asegurar que no haya restricciones de altura */
+        max-height: none;
+    }
+}
+
 @media (max-width: 480px) {
+    .auth-body {
+        /* FIX CRÍTICO: Alineación superior y padding reducido */
+        align-items: flex-start;
+        padding: 15px 10px;
+        min-height: 100vh;
+    }
+
     .auth-container {
         padding: 40px 30px;
         margin: 10px;
+        /* FIX CRÍTICO: Remover restricciones de altura completamente */
+        max-height: none;
+        /* FIX: Asegurar que todo el contenido sea visible */
+        min-height: auto;
     }
 
     .auth-container h1 {
@@ -213,6 +250,77 @@
     .auth-particles .particle {
         width: 2px;
         height: 2px;
+    }
+
+    /* FIX CRÍTICO: Asegurar que los enlaces sean visibles y clickeables */
+    .auth-link {
+        margin-top: 20px;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+    }
+
+    .auth-link a {
+        padding: 15px 20px;
+        font-size: 0.9rem;
+        /* Área de toque más grande en mobile */
+        min-height: 48px;
+        min-width: 140px;
+    }
+
+    /* FIX: Asegurar visibilidad del formulario completo */
+    .auth-form {
+        margin-bottom: 20px;
+    }
+
+    .forgot-password {
+        margin-bottom: 20px;
+    }
+}
+
+/* FIX CRÍTICO: Mobile landscape */
+@media (max-width: 768px) and (orientation: landscape) {
+    .auth-body {
+        align-items: center;
+        padding: 10px;
+    }
+
+    .auth-container {
+        padding: 30px 25px;
+        margin: 5px;
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+    }
+
+    .brand-header {
+        margin-bottom: 25px;
+    }
+
+    .auth-container h1 {
+        font-size: 1.7rem;
+    }
+}
+
+/* FIX: iPhone SE y dispositivos muy pequeños */
+@media (max-width: 375px) {
+    .auth-container {
+        padding: 30px 20px;
+    }
+
+    .auth-container h1 {
+        font-size: 1.7rem;
+    }
+
+    .brand-logo {
+        width: 60px;
+        height: 60px;
+        font-size: 1.4rem;
+    }
+}
+
+/* FIX: Asegurar compatibilidad con Safari móvil */
+@supports (-webkit-touch-callout: none) {
+    .auth-body {
+        min-height: -webkit-fill-available;
     }
 }
 
