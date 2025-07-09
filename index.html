@@ -43,11 +43,26 @@
                     </div>
                 </div>
 
-                <!-- User info section -->
+                <!-- User info section - Desktop -->
                 <div class="user-info" id="user-info">
                     <div class="user-name" id="user-name">Cargando...</div>
                     <div class="user-email" id="user-email">Cargando...</div>
                     <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
+                </div>
+
+                <!-- FIX CRÍTICO: Menú de usuario para mobile -->
+                <div class="user-menu" id="user-menu">
+                    <button class="user-menu-toggle" id="user-menu-toggle">
+                        👤
+                    </button>
+                    <div class="user-menu-dropdown" id="user-menu-dropdown">
+                        <div class="user-menu-item" id="menu-profile">
+                            ⚙️ Mi Perfil
+                        </div>
+                        <div class="user-menu-item logout" id="menu-logout">
+                            🚪 Cerrar Sesión
+                        </div>
+                    </div>
                 </div>
 
                 <nav class="sidebar-nav">
@@ -95,7 +110,7 @@
                             <h3>Catálogo Interactivo</h3>
                             <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
                             <!-- FIX CRÍTICO: Botones con funcionalidad WhatsApp -->
-                            <button class="btn" id="catalog-share-btn" data-tool="catalog" data-action="share" style="margin-bottom: 10px; background: #25D366; border: none;">
+                            <button class="btn" id="catalog-share-btn" data-tool="catalog" data-action="share" data-url="https://catalogo.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
                                 📱 Compartir via WhatsApp
                             </button>
                             <button class="btn" id="catalog-open-btn" data-tool="catalog" data-action="open" data-url="https://catalogo.4millones.com/">
@@ -116,7 +131,7 @@
                             <h3>Modelo de Negocio</h3>
                             <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
                             <!-- FIX CRÍTICO: Botones con funcionalidad WhatsApp -->
-                            <button class="btn" id="business-share-btn" data-tool="business" data-action="share" style="margin-bottom: 10px; background: #25D366; border: none;">
+                            <button class="btn" id="business-share-btn" data-tool="business" data-action="share" data-url="https://oportunidad.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
                                 📱 Compartir via WhatsApp
                             </button>
                             <button class="btn" id="business-open-btn" data-tool="business" data-action="open" data-url="https://oportunidad.4millones.com/">
@@ -189,7 +204,7 @@
     <!-- Cargar Supabase desde CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    <!-- Script modular con funcionalidad WhatsApp integrada -->
+    <!-- Script modular con todas las correcciones -->
     <script type="module">
         // Importar funciones necesarias - FIX CRÍTICO
         import {
@@ -219,26 +234,26 @@
         let currentUserProfile = null;
         let isLoading = false;
 
-        console.log('Cargando portal...');
+        console.log('🚀 Cargando portal...');
 
         // Verificar Supabase
         if (typeof supabase === 'undefined') {
-            console.error('Supabase no disponible');
+            console.error('❌ Supabase no disponible');
             showError(MESSAGES.authRequired);
         } else {
             // Inicializar aplicación
             try {
                 initializeSupabase();
-                console.log('Supabase inicializado');
+                console.log('✅ Supabase inicializado');
 
                 // Función principal
                 const loadPortal = async () => {
                     try {
-                        console.log('Verificando autenticación...');
+                        console.log('🔐 Verificando autenticación...');
                         const session = await authGuard(true);
                         if (!session) return;
 
-                        console.log('Obteniendo perfil...');
+                        console.log('👤 Obteniendo perfil...');
                         const profile = await getUserProfile();
                         if (!profile) {
                             showError('Error al cargar perfil');
@@ -247,10 +262,18 @@
 
                         // Guardar perfil globalmente
                         currentUserProfile = profile;
+                        console.log('📋 Perfil cargado:', {
+                            id: profile.id,
+                            email: profile.email,
+                            whatsapp: profile.whatsapp,
+                            name: profile.full_name || profile.first_name
+                        });
 
-                        console.log('Personalizando portal...');
+                        console.log('🎨 Personalizando portal...');
                         // Actualizar UI
-                        const displayName = formatUserName(profile.full_name) || formatUserName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim()) || 'Usuario';
+                        const displayName = formatUserName(profile.full_name) ||
+                                          formatUserName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim()) ||
+                                          'Usuario';
                         document.getElementById('user-name').textContent = displayName;
                         document.getElementById('user-email').textContent = profile.email;
 
@@ -258,29 +281,70 @@
                         const firstName = displayName.split(' ')[0];
                         document.getElementById('welcome-text').textContent = `Bienvenido, ${firstName}`;
 
-                        console.log('Portal cargado para:', displayName);
-                        console.log('Perfil completo:', currentUserProfile);
-
                         // Configurar event listeners después de cargar el perfil
                         setupEventListeners();
 
+                        console.log('✅ Portal cargado para:', displayName);
                         showMainContent();
 
                     } catch (error) {
-                        console.error('Error al cargar portal:', error);
+                        console.error('❌ Error al cargar portal:', error);
                         showError('Error al cargar portal');
                     }
                 };
 
                 // FIX CRÍTICO: Event listeners con funcionalidad WhatsApp completa
                 const setupEventListeners = () => {
-                    // Logout button
-                    document.getElementById('logout-btn').addEventListener('click', (e) => {
-                        e.preventDefault();
-                        if (confirm('¿Cerrar sesión?')) {
-                            logout(); // Usa la función corregida de utils.js
-                        }
-                    });
+                    // FIX: Desktop logout button
+                    const logoutBtn = document.getElementById('logout-btn');
+                    if (logoutBtn) {
+                        logoutBtn.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (confirm('¿Cerrar sesión?')) {
+                                logout();
+                            }
+                        });
+                    }
+
+                    // FIX CRÍTICO: Mobile user menu
+                    const userMenuToggle = document.getElementById('user-menu-toggle');
+                    const userMenuDropdown = document.getElementById('user-menu-dropdown');
+                    const menuLogout = document.getElementById('menu-logout');
+                    const menuProfile = document.getElementById('menu-profile');
+
+                    if (userMenuToggle && userMenuDropdown) {
+                        // Toggle menu dropdown
+                        userMenuToggle.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            userMenuDropdown.classList.toggle('show');
+                        });
+
+                        // Close menu when clicking outside
+                        document.addEventListener('click', () => {
+                            userMenuDropdown.classList.remove('show');
+                        });
+
+                        // Prevent closing when clicking inside menu
+                        userMenuDropdown.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+                    }
+
+                    if (menuLogout) {
+                        menuLogout.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            if (confirm('¿Cerrar sesión?')) {
+                                logout();
+                            }
+                        });
+                    }
+
+                    if (menuProfile) {
+                        menuProfile.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            window.location.href = 'pages/profile.html';
+                        });
+                    }
 
                     // Event listener para todos los botones de herramientas
                     document.addEventListener('click', async (event) => {
@@ -295,6 +359,7 @@
 
                             const action = target.dataset.action;
                             const toolType = target.dataset.tool;
+                            const toolUrl = target.dataset.url;
 
                             if (!currentUserProfile) {
                                 showMessage('Error: Perfil de usuario no disponible', 'error');
@@ -310,27 +375,28 @@
                                     // FIX CRÍTICO: Compartir via WhatsApp
                                     target.textContent = 'Generando enlace...';
 
-                                    const toolConfig = TOOL_CONFIG[toolType];
-                                    if (!toolConfig) {
-                                        throw new Error('Configuración de herramienta no encontrada');
+                                    if (!toolUrl) {
+                                        throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    shareToolWithWhatsApp(toolType, currentUserProfile, toolConfig.url);
+                                    // FIX CRÍTICO: Usar toolUrl del dataset
+                                    console.log(`🔗 Compartiendo ${toolType} con URL:`, toolUrl);
+                                    shareToolWithWhatsApp(toolType, currentUserProfile, toolUrl);
 
                                 } else if (action === 'open') {
                                     // Abrir herramienta directamente
                                     target.textContent = 'Abriendo...';
 
-                                    const toolUrl = target.dataset.url;
                                     if (!toolUrl) {
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
+                                    console.log(`📂 Abriendo ${toolType} con URL:`, toolUrl);
                                     openTool(toolUrl, currentUserProfile);
                                 }
 
                             } catch (error) {
-                                console.error(`Error en acción ${action}:`, error);
+                                console.error(`❌ Error en acción ${action}:`, error);
                                 showMessage(`Error al ${action === 'share' ? 'compartir' : 'abrir'} herramienta`, 'error');
                             } finally {
                                 setTimeout(() => {
@@ -342,25 +408,25 @@
                         }
                     });
 
-                    console.log('Event listeners configurados correctamente');
+                    console.log('✅ Event listeners configurados correctamente');
                 };
 
                 // Inicializar
                 loadPortal();
 
             } catch (error) {
-                console.error('Error de inicialización:', error);
+                console.error('❌ Error de inicialización:', error);
                 showError('Error al inicializar');
             }
         }
 
         // Manejo de errores de red
         window.addEventListener('online', () => {
-            showMessage('Conexión restaurada', 'success', 3000);
+            showMessage('🌐 Conexión restaurada', 'success', 3000);
         });
 
         window.addEventListener('offline', () => {
-            showMessage('Sin conexión a internet', 'error', 5000);
+            showMessage('📡 Sin conexión a internet', 'error', 5000);
         });
 
         // Manejar orientación en móvil

@@ -118,7 +118,7 @@
     text-decoration: underline;
 }
 
-/* Enlaces de registro/login - FIX CRÍTICO MOBILE */
+/* Enlaces de registro/login - FIX CRÍTICO MOBILE UX */
 .auth-link {
     text-align: center;
     margin-top: 30px;
@@ -204,12 +204,13 @@
     margin-bottom: 25px;
 }
 
-/* Responsividad para auth - FIX CRÍTICO MOBILE */
+/* Responsividad para auth - FIX CRÍTICO MOBILE UX */
 @media (max-width: 768px) {
     .auth-body {
-        /* FIX: Permitir scroll y alineación superior en tablet */
+        /* FIX: Alineación superior para permitir ver todo el contenido */
         align-items: flex-start;
         padding: 20px 15px;
+        min-height: 100vh;
     }
 
     .auth-container {
@@ -217,34 +218,49 @@
         margin-bottom: 20px;
         /* FIX: Asegurar que no haya restricciones de altura */
         max-height: none;
+        /* FIX: Reducir padding para maximizar espacio */
+        padding: 40px 30px;
     }
 }
 
+/* FIX CRÍTICO MOBILE: Optimizar para pantallas pequeñas */
 @media (max-width: 480px) {
     .auth-body {
-        /* FIX CRÍTICO: Alineación superior y padding reducido */
+        /* FIX CRÍTICO: Minimizar padding y centrar verticalmente solo si hay espacio */
+        padding: 10px;
         align-items: flex-start;
-        padding: 15px 10px;
         min-height: 100vh;
     }
 
     .auth-container {
-        padding: 40px 30px;
-        margin: 10px;
-        /* FIX CRÍTICO: Remover restricciones de altura completamente */
+        /* FIX CRÍTICO: Maximizar uso del espacio disponible */
+        padding: 30px 20px;
+        margin: 10px 0;
         max-height: none;
-        /* FIX: Asegurar que todo el contenido sea visible */
         min-height: auto;
+        /* FIX: Asegurar que quepa en pantalla */
+        width: calc(100% - 20px);
     }
 
     .auth-container h1 {
-        font-size: 1.9rem;
+        font-size: 1.8rem;
+        margin-bottom: 8px;
     }
 
     .brand-logo {
-        width: 70px;
-        height: 70px;
-        font-size: 1.6rem;
+        width: 60px;
+        height: 60px;
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+    }
+
+    .brand-header {
+        margin-bottom: 25px;
+    }
+
+    .auth-container .subtitle {
+        font-size: 1rem;
+        margin-bottom: 25px;
     }
 
     .auth-particles .particle {
@@ -252,27 +268,67 @@
         height: 2px;
     }
 
-    /* FIX CRÍTICO: Asegurar que los enlaces sean visibles y clickeables */
+    /* FIX CRÍTICO: Enlaces de registro/login MÁS VISIBLES */
     .auth-link {
         margin-top: 20px;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
+        margin-bottom: 20px;
+        padding-top: 20px;
+        /* FIX: Hacer más prominente el enlace */
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 12px;
+        padding: 20px 15px;
+        border-top: none;
+    }
+
+    .auth-link p {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+        font-weight: 600;
+        color: var(--dark-text);
     }
 
     .auth-link a {
-        padding: 15px 20px;
-        font-size: 0.9rem;
-        /* Área de toque más grande en mobile */
+        padding: 14px 24px;
+        font-size: 0.95rem;
+        /* FIX: Área de toque más grande y más visible */
         min-height: 48px;
-        min-width: 140px;
+        min-width: 180px;
+        font-weight: 700;
+        /* FIX: Hacer más llamativo */
+        background: var(--primary);
+        color: white;
+        border: 2px solid var(--primary);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
-    /* FIX: Asegurar visibilidad del formulario completo */
+    .auth-link a:hover {
+        background: var(--secondary);
+        border-color: var(--secondary);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    /* FIX: Formulario más compacto */
     .auth-form {
         margin-bottom: 20px;
     }
 
+    .auth-form .form-group {
+        margin-bottom: 18px;
+    }
+
+    .auth-form input {
+        padding: 12px 14px;
+        font-size: 16px; /* Evita zoom en iOS */
+    }
+
     .forgot-password {
+        margin-bottom: 15px;
+    }
+
+    .auth-submit-btn {
+        padding: 14px;
+        font-size: 0.95rem;
         margin-bottom: 20px;
     }
 }
@@ -281,39 +337,71 @@
 @media (max-width: 768px) and (orientation: landscape) {
     .auth-body {
         align-items: center;
-        padding: 10px;
+        padding: 5px;
     }
 
     .auth-container {
-        padding: 30px 25px;
+        padding: 20px 25px;
         margin: 5px;
-        max-height: calc(100vh - 20px);
+        max-height: calc(100vh - 10px);
         overflow-y: auto;
     }
 
     .brand-header {
-        margin-bottom: 25px;
+        margin-bottom: 20px;
     }
 
     .auth-container h1 {
-        font-size: 1.7rem;
+        font-size: 1.6rem;
+    }
+
+    .auth-link {
+        margin-top: 15px;
+        padding: 15px 10px;
     }
 }
 
 /* FIX: iPhone SE y dispositivos muy pequeños */
 @media (max-width: 375px) {
     .auth-container {
-        padding: 30px 20px;
+        padding: 25px 15px;
+        margin: 5px 0;
     }
 
     .auth-container h1 {
-        font-size: 1.7rem;
+        font-size: 1.6rem;
     }
 
     .brand-logo {
-        width: 60px;
-        height: 60px;
-        font-size: 1.4rem;
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+
+    .auth-link a {
+        min-width: 160px;
+        padding: 12px 20px;
+    }
+}
+
+/* FIX: Pantallas muy altas (crear cuenta siempre visible) */
+@media (max-height: 600px) {
+    .auth-body {
+        align-items: flex-start;
+        padding: 5px;
+    }
+
+    .auth-container {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    .brand-header {
+        margin-bottom: 15px;
+    }
+
+    .auth-form .form-group {
+        margin-bottom: 12px;
     }
 }
 
@@ -321,6 +409,13 @@
 @supports (-webkit-touch-callout: none) {
     .auth-body {
         min-height: -webkit-fill-available;
+    }
+
+    @media (max-width: 480px) {
+        .auth-container {
+            /* Safari mobile fix */
+            max-height: calc(100vh - 20px);
+        }
     }
 }
 

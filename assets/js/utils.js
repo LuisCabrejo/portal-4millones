@@ -230,7 +230,7 @@ export const clearValidations = (inputIds) => {
     });
 };
 
-// ===== NUEVAS FUNCIONES CRÍTICAS - FIX WHATSAPP Y URLS =====
+// ===== FUNCIONES CRÍTICAS CORREGIDAS =====
 
 /**
  * FIX CRÍTICO: Generar URL personalizada con parámetro socio
@@ -239,15 +239,18 @@ export const clearValidations = (inputIds) => {
  * @returns {string} URL con parámetro socio
  */
 export const generatePersonalizedUrl = (baseUrl, userId) => {
-    if (!baseUrl || !userId) {
-        console.error('URL base o ID de usuario faltante');
+    // FIX: Validar que baseUrl sea string
+    if (!baseUrl || typeof baseUrl !== 'string' || !userId) {
+        console.error('URL base debe ser string y userId requerido:', { baseUrl, userId });
         return baseUrl || '#';
     }
 
     try {
         const url = new URL(baseUrl);
         url.searchParams.set('socio', userId);
-        return url.toString();
+        const finalUrl = url.toString();
+        console.log('URL personalizada generada:', finalUrl);
+        return finalUrl;
     } catch (error) {
         console.error('Error al generar URL personalizada:', error);
         return baseUrl;
@@ -262,27 +265,33 @@ export const generatePersonalizedUrl = (baseUrl, userId) => {
  * @returns {string} URL de WhatsApp
  */
 export const generateWhatsAppUrl = (phoneNumber, message, toolUrl = null) => {
-    if (!phoneNumber) {
-        console.error('Número de WhatsApp requerido');
+    // FIX: Validar que phoneNumber sea string
+    if (!phoneNumber || typeof phoneNumber !== 'string') {
+        console.error('Número de WhatsApp debe ser string:', phoneNumber);
+        showMessage('Error: Número de WhatsApp no válido', 'error');
         return '#';
     }
 
     try {
         // Limpiar número de teléfono (remover espacios, guiones, etc.)
         const cleanPhone = phoneNumber.replace(/[^\d+]/g, '');
+        console.log('Teléfono limpio:', cleanPhone);
 
         // Construir mensaje
         let fullMessage = message || '¡Hola! Me interesa conocer más sobre Gano Excel. ';
-        if (toolUrl) {
+        if (toolUrl && typeof toolUrl === 'string') {
             fullMessage += toolUrl;
         }
 
         // Codificar mensaje para URL
         const encodedMessage = encodeURIComponent(fullMessage);
+        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
 
-        return `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+        console.log('URL WhatsApp generada:', whatsappUrl);
+        return whatsappUrl;
     } catch (error) {
         console.error('Error al generar URL de WhatsApp:', error);
+        showMessage('Error al generar enlace de WhatsApp', 'error');
         return '#';
     }
 };
@@ -295,13 +304,16 @@ export const generateWhatsAppUrl = (phoneNumber, message, toolUrl = null) => {
  */
 export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
     try {
+        console.log('shareToolWithWhatsApp llamada con:', { toolType, userProfile, baseUrl });
+
         // Validar datos requeridos
         if (!userProfile || !userProfile.id) {
             showMessage('Error: Información de usuario no disponible', 'error');
             return;
         }
 
-        if (!userProfile.whatsapp) {
+        // FIX: Verificar que whatsapp sea válido
+        if (!userProfile.whatsapp || typeof userProfile.whatsapp !== 'string') {
             showMessage('Configura tu WhatsApp en el perfil para compartir herramientas', 'error');
             setTimeout(() => {
                 window.location.href = 'pages/profile.html';
@@ -309,7 +321,9 @@ export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
             return;
         }
 
-        if (!baseUrl) {
+        // FIX: Verificar que baseUrl sea string válida
+        if (!baseUrl || typeof baseUrl !== 'string') {
+            console.error('Error: URL base no válida:', baseUrl);
             showMessage('Error: URL de herramienta no disponible', 'error');
             return;
         }
@@ -333,6 +347,11 @@ export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
             whatsappMessage,
             personalizedUrl
         );
+
+        if (whatsappUrl === '#') {
+            showMessage('Error al generar enlace de WhatsApp', 'error');
+            return;
+        }
 
         // Abrir WhatsApp
         console.log('Abriendo WhatsApp:', whatsappUrl);
@@ -391,30 +410,56 @@ export const getCorrectRoute = (targetPage) => {
 };
 
 /**
- * FIX CRÍTICO: Función de logout con rutas corregidas
+ * FIX CRÍTICO: Función de logout con rutas corregidas y Supabase verificado
  */
-export const logout = () => {
+export const logout = async () => {
     try {
-        // Limpiar datos de sesión
-        if (window.supabase) {
-            window.supabase.auth.signOut();
+        console.log('Iniciando logout...');
+
+        // FIX CRÍTICO: Verificar que Supabase esté disponible
+        if (typeof window.supabase === 'undefined') {
+            console.error('Supabase no está disponible');
+            // Intentar limpiar localStorage al menos
+            try {
+                localStorage.removeItem('supabase.auth.token');
+                sessionStorage.clear();
+            } catch (e) {
+                console.error('Error al limpiar storage:', e);
+            }
+        } else {
+            // Usar Supabase para cerrar sesión
+            const { error } = await window.supabase.auth.signOut();
+            if (error) {
+                console.error('Error al cerrar sesión en Supabase:', error);
+            }
         }
 
-        // Limpiar localStorage si existe
-        localStorage.removeItem('supabase.auth.token');
+        // Limpiar datos adicionales
+        try {
+            localStorage.removeItem('supabase.auth.token');
+            sessionStorage.clear();
+        } catch (e) {
+            console.error('Error al limpiar storage:', e);
+        }
 
         // Mostrar mensaje de éxito
-        showMessage('Sesión cerrada correctamente', 'success');
+        showMessage('Sesión cerrada correctamente', 'success', 2000);
 
-        // FIX CRÍTICO: Redirección con ruta correcta
+        // FIX CRÍTICO: Redirección con ruta correcta después de delay
         setTimeout(() => {
             const loginPath = getCorrectRoute('login');
+            console.log('Redirigiendo a:', loginPath);
             window.location.href = loginPath;
         }, 1500);
 
     } catch (error) {
         console.error('Error durante logout:', error);
-        showMessage('Error al cerrar sesión', 'error');
+
+        // Aún así intentar redirigir
+        setTimeout(() => {
+            const loginPath = getCorrectRoute('login');
+            window.location.href = loginPath;
+        }, 1000);
     }
 };
 
@@ -425,7 +470,9 @@ export const logout = () => {
  */
 export const openTool = (baseUrl, userProfile = null) => {
     try {
-        if (!baseUrl) {
+        // FIX: Verificar que baseUrl sea string
+        if (!baseUrl || typeof baseUrl !== 'string') {
+            console.error('Error: URL base no válida:', baseUrl);
             showMessage('Error: URL de herramienta no disponible', 'error');
             return;
         }
@@ -437,6 +484,7 @@ export const openTool = (baseUrl, userProfile = null) => {
         }
 
         // Abrir en nueva pestaña
+        console.log('Abriendo herramienta:', toolUrl);
         window.open(toolUrl, '_blank');
         showMessage('✓ Abriendo herramienta', 'success', 2000);
 
@@ -446,7 +494,7 @@ export const openTool = (baseUrl, userProfile = null) => {
     }
 };
 
-// Configuración de herramientas
+// Configuración de herramientas - FIX: Asegurar que sean strings
 export const TOOL_CONFIG = {
     catalog: {
         name: 'Catálogo Premium',
