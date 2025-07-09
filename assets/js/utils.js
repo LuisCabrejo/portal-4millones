@@ -548,6 +548,26 @@ export const initializeMobileHeaderControl = () => {
     console.log('📱 Control de header mobile inicializado');
 };
 
+/**
+ * 📱 FIX CRÍTICO ADICIONAL: Función para ocultar header en páginas de auth
+ * Se ejecuta automáticamente en cada página
+ */
+export const forceHideHeaderInAuth = () => {
+    if (isAuthPage()) {
+        const mobileHeader = document.querySelector('.mobile-header');
+        if (mobileHeader) {
+            mobileHeader.style.display = 'none';
+            mobileHeader.style.visibility = 'hidden';
+            mobileHeader.style.opacity = '0';
+            mobileHeader.style.pointerEvents = 'none';
+        }
+
+        // Asegurar que body no tenga padding-top
+        document.body.style.paddingTop = '0';
+        console.log('📱 Header mobile forzadamente oculto en página auth');
+    }
+};
+
 // ===== EXPLICACIÓN DE CÓDIGOS UUID =====
 
 /**

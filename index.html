@@ -15,24 +15,54 @@
 </head>
 <!-- 📱 FIX: Marcado como página de portal (no auth) -->
 <body data-page="portal">
-    <!-- 📱 FIX CRÍTICO: Header Mobile Controlado -->
+    <!-- 🎨 HEADER MOBILE PREMIUM REDISEÑADO -->
     <header class="mobile-header">
         <div class="mobile-header-content">
-            <div class="mobile-logo">4 Millones</div>
-            <div class="mobile-user-menu">
-                <button class="mobile-user-toggle" id="mobile-user-toggle">
-                    👤
-                </button>
+            <!-- 🎨 LOGOTIPO PREMIUM -->
+            <div class="mobile-logo">
+                <!-- Opción 1: Con imagen (cuando tengas el logo) -->
+                <!-- <img src="assets/images/logo-4millones.png" alt="4 Millones" class="mobile-logo-img"> -->
+
+                <!-- Opción 2: Texto premium (temporal) -->
+                <img src="assets/images/logo-4millones.svg" alt="4 Millones" class="mobile-logo-img">
+
+            </div>
+
+            <!-- 🎨 USER AREA PREMIUM -->
+            <div class="mobile-user-area" id="mobile-user-area">
+                <div class="mobile-user-avatar" id="mobile-user-avatar">
+                    U
+                </div>
+                <div class="mobile-user-info-inline">
+                    <div class="mobile-user-name-inline" id="mobile-user-name-inline">
+                        Usuario
+                    </div>
+                    <div class="mobile-user-role">
+                        Socio Estratégico
+                    </div>
+                </div>
+                <div class="mobile-dropdown-arrow">▼</div>
+
+                <!-- 🎨 DROPDOWN PREMIUM -->
                 <div class="mobile-user-dropdown" id="mobile-user-dropdown">
-                    <div class="mobile-user-info">
-                        <div class="mobile-user-name" id="mobile-user-name">Usuario</div>
-                        <div class="mobile-user-email" id="mobile-user-email">email@ejemplo.com</div>
+                    <div class="mobile-user-info-dropdown">
+                        <div class="mobile-user-avatar-large" id="mobile-user-avatar-large">
+                            U
+                        </div>
+                        <div class="mobile-user-name-dropdown" id="mobile-user-name-dropdown">
+                            Usuario
+                        </div>
+                        <div class="mobile-user-email" id="mobile-user-email-dropdown">
+                            email@ejemplo.com
+                        </div>
                     </div>
                     <div class="mobile-menu-item" id="mobile-menu-profile">
-                        ⚙️ Mi Perfil
+                        <span class="mobile-menu-icon">⚙️</span>
+                        Mi Perfil
                     </div>
                     <div class="mobile-menu-item logout" id="mobile-menu-logout">
-                        🚪 Cerrar Sesión
+                        <span class="mobile-menu-icon">🚪</span>
+                        Cerrar Sesión
                     </div>
                 </div>
             </div>
@@ -111,7 +141,7 @@
                 <div id="message" style="display: none; margin-bottom: 20px;"></div>
 
                 <div class="tools-grid">
-                    <!-- 🚨 FIX CRÍTICO: Card Catálogo con WhatsApp API corregida -->
+                    <!-- 🚨 FIX: Card Catálogo con WhatsApp API corregida -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');">
                             <div class="status-badge available">Disponible</div>
@@ -119,9 +149,9 @@
                         <div class="tool-card-content">
                             <h3>Catálogo Interactivo</h3>
                             <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
-                            <!-- 🚨 FIX CRÍTICO: WhatsApp con API corregida (no web.whatsapp.com) -->
+                            <!-- ✅ WhatsApp funcionando con api.whatsapp.com -->
                             <button class="btn" id="catalog-share-btn" data-tool="catalog" data-action="share" data-url="https://catalogo.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
-                                📱 Compartir via WhatsApp
+                                📱 Compartir vía WhatsApp
                             </button>
                             <button class="btn" id="catalog-open-btn" data-tool="catalog" data-action="open" data-url="https://catalogo.4millones.com/">
                                 🔗 Abrir Catálogo
@@ -132,7 +162,7 @@
                         </div>
                     </div>
 
-                    <!-- 🚨 FIX CRÍTICO: Card Modelo de Negocio con WhatsApp API corregida -->
+                    <!-- 🚨 FIX: Card Modelo de Negocio con WhatsApp API corregida -->
                     <div class="tool-card">
                         <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');">
                             <div class="status-badge available">Disponible</div>
@@ -140,9 +170,9 @@
                         <div class="tool-card-content">
                             <h3>Modelo de Negocio</h3>
                             <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
-                            <!-- 🚨 FIX CRÍTICO: WhatsApp con API corregida (no web.whatsapp.com) -->
+                            <!-- ✅ WhatsApp funcionando con api.whatsapp.com -->
                             <button class="btn" id="business-share-btn" data-tool="business" data-action="share" data-url="https://oportunidad.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
-                                📱 Compartir via WhatsApp
+                                📱 Compartir vía WhatsApp
                             </button>
                             <button class="btn" id="business-open-btn" data-tool="business" data-action="open" data-url="https://oportunidad.4millones.com/">
                                 🔗 Abrir Presentación
@@ -232,11 +262,11 @@
             formatUserName,
             showMessage,
             clearMessage,
-            shareToolWithWhatsApp,  // 🚨 FIX: Ahora usa api.whatsapp.com
+            shareToolWithWhatsApp,  // ✅ WhatsApp funcionando
             openTool,
             logout,
             TOOL_CONFIG,
-            initializeMobileHeaderControl  // 📱 FIX: Control de header mobile
+            initializeMobileHeaderControl  // 📱 Control de header mobile
         } from './assets/js/utils.js';
 
         import { MESSAGES } from './assets/js/config.js';
@@ -247,7 +277,7 @@
 
         console.log('🚀 Cargando portal...');
 
-        // 📱 FIX CRÍTICO: Inicializar control de header mobile
+        // 📱 FIX: Inicializar control de header mobile
         initializeMobileHeaderControl();
 
         // Verificar Supabase
@@ -259,6 +289,26 @@
             try {
                 initializeSupabase();
                 console.log('✅ Supabase inicializado');
+
+                // Función para obtener iniciales
+                const getInitials = (name) => {
+                    if (!name) return 'U';
+                    const parts = name.trim().split(' ');
+                    if (parts.length >= 2) {
+                        return (parts[0][0] + parts[1][0]).toUpperCase();
+                    }
+                    return parts[0][0].toUpperCase();
+                };
+
+                // Función para obtener nombre para display (primer nombre + primer apellido)
+                const getDisplayName = (fullName) => {
+                    if (!fullName) return 'Usuario';
+                    const parts = fullName.trim().split(' ');
+                    if (parts.length >= 2) {
+                        return `${parts[0]} ${parts[1]}`;
+                    }
+                    return parts[0];
+                };
 
                 // Función principal
                 const loadPortal = async () => {
@@ -282,26 +332,37 @@
                             name: profile.full_name || profile.first_name
                         });
 
-                        console.log('🎨 Personalizando portal...');
+                        console.log('🎨 Personalizando portal premium...');
+
+                        // Formatear nombres
+                        const fullName = formatUserName(profile.full_name) ||
+                                       formatUserName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim()) ||
+                                       'Usuario';
+
+                        const displayName = getDisplayName(fullName);
+                        const initials = getInitials(fullName);
+                        const firstName = fullName.split(' ')[0];
+
                         // Actualizar UI Desktop
-                        const displayName = formatUserName(profile.full_name) ||
-                                          formatUserName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim()) ||
-                                          'Usuario';
-                        document.getElementById('user-name').textContent = displayName;
+                        document.getElementById('user-name').textContent = fullName;
                         document.getElementById('user-email').textContent = profile.email;
 
-                        // FIX CRÍTICO: Actualizar UI Mobile
-                        document.getElementById('mobile-user-name').textContent = displayName;
-                        document.getElementById('mobile-user-email').textContent = profile.email;
+                        // 🎨 Actualizar UI Mobile Premium
+                        document.getElementById('mobile-user-name-inline').textContent = displayName;
+                        document.getElementById('mobile-user-name-dropdown').textContent = fullName;
+                        document.getElementById('mobile-user-email-dropdown').textContent = profile.email;
 
-                        // Personalizar mensaje
-                        const firstName = displayName.split(' ')[0];
+                        // Actualizar avatares con iniciales
+                        document.getElementById('mobile-user-avatar').textContent = initials;
+                        document.getElementById('mobile-user-avatar-large').textContent = initials;
+
+                        // Personalizar mensaje de bienvenida
                         document.getElementById('welcome-text').textContent = `Bienvenido, ${firstName}`;
 
                         // Configurar event listeners
                         setupEventListeners();
 
-                        console.log('✅ Portal cargado para:', displayName);
+                        console.log('✅ Portal premium cargado para:', fullName);
                         showMainContent();
 
                     } catch (error) {
@@ -310,7 +371,7 @@
                     }
                 };
 
-                // FIX CRÍTICO: Event listeners completos
+                // 🎨 Event listeners premium
                 const setupEventListeners = () => {
                     // Desktop logout button
                     const logoutBtn = document.getElementById('logout-btn');
@@ -323,33 +384,37 @@
                         });
                     }
 
-                    // FIX CRÍTICO: Mobile user menu
-                    const mobileUserToggle = document.getElementById('mobile-user-toggle');
+                    // 🎨 Mobile user area premium
+                    const mobileUserArea = document.getElementById('mobile-user-area');
                     const mobileUserDropdown = document.getElementById('mobile-user-dropdown');
                     const mobileMenuLogout = document.getElementById('mobile-menu-logout');
                     const mobileMenuProfile = document.getElementById('mobile-menu-profile');
 
-                    if (mobileUserToggle && mobileUserDropdown) {
-                        // Toggle menu dropdown
-                        mobileUserToggle.addEventListener('click', (e) => {
+                    if (mobileUserArea && mobileUserDropdown) {
+                        // Toggle dropdown premium
+                        mobileUserArea.addEventListener('click', (e) => {
                             e.stopPropagation();
+                            mobileUserArea.classList.toggle('active');
                             mobileUserDropdown.classList.toggle('show');
                         });
 
-                        // Close menu when clicking outside
+                        // Close dropdown cuando clic fuera
                         document.addEventListener('click', () => {
+                            mobileUserArea.classList.remove('active');
                             mobileUserDropdown.classList.remove('show');
                         });
 
-                        // Prevent closing when clicking inside menu
+                        // Prevenir cierre cuando clic dentro
                         mobileUserDropdown.addEventListener('click', (e) => {
                             e.stopPropagation();
                         });
                     }
 
+                    // Mobile menu actions
                     if (mobileMenuLogout) {
                         mobileMenuLogout.addEventListener('click', (e) => {
                             e.preventDefault();
+                            mobileUserArea.classList.remove('active');
                             mobileUserDropdown.classList.remove('show');
                             if (confirm('¿Cerrar sesión?')) {
                                 logout();
@@ -360,6 +425,7 @@
                     if (mobileMenuProfile) {
                         mobileMenuProfile.addEventListener('click', (e) => {
                             e.preventDefault();
+                            mobileUserArea.classList.remove('active');
                             mobileUserDropdown.classList.remove('show');
                             window.location.href = 'pages/profile.html';
                         });
@@ -391,15 +457,14 @@
 
                             try {
                                 if (action === 'share') {
-                                    // 🚨 FIX CRÍTICO: Compartir via WhatsApp con API.WHATSAPP.COM
+                                    // ✅ WhatsApp funcionando perfectamente
                                     target.textContent = 'Generando enlace...';
 
                                     if (!toolUrl) {
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    console.log(`📱 Compartiendo ${toolType} con URL (fix aplicado):`, toolUrl);
-                                    console.log('🚨 Usando api.whatsapp.com para selección de contacto');
+                                    console.log(`📱 Compartiendo ${toolType} vía WhatsApp:`, toolUrl);
                                     shareToolWithWhatsApp(toolType, currentUserProfile, toolUrl);
 
                                 } else if (action === 'open') {
@@ -410,7 +475,7 @@
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    console.log(`🔗 Abriendo ${toolType} con URL:`, toolUrl);
+                                    console.log(`🔗 Abriendo ${toolType}:`, toolUrl);
                                     openTool(toolUrl, currentUserProfile);
                                 }
 
@@ -427,7 +492,7 @@
                         }
                     });
 
-                    console.log('✅ Event listeners configurados correctamente');
+                    console.log('✅ Event listeners premium configurados');
                 };
 
                 // Inicializar

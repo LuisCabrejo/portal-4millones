@@ -8,30 +8,37 @@
     z-index: 2;
 }
 
-/* 📱 FIX CRÍTICO: Header Mobile con control mejorado para auth pages */
+/* 🎨 HEADER MOBILE PREMIUM REDISEÑADO */
 .mobile-header {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px 20px;
     z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
 }
 
-/* 🚨 FIX CRÍTICO: Ocultar header mobile en páginas de autenticación */
+/* 🚨 FIX CRÍTICO: Ocultar completamente en páginas de autenticación */
 body[data-page="auth"] .mobile-header,
-body.auth-body .mobile-header {
+body.auth-body .mobile-header,
+body[class*="auth"] .mobile-header {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
-/* 🚨 FIX CRÍTICO: Sin padding-top en páginas de auth */
+/* 🚨 FIX: Sin padding-top en páginas de auth */
 body[data-page="auth"],
-body.auth-body {
+body.auth-body,
+body[class*="auth"] {
     padding-top: 0 !important;
 }
 
@@ -42,116 +49,257 @@ body.auth-body {
     max-width: 100%;
 }
 
+/* 🎨 LOGOTIPO PREMIUM */
 .mobile-logo {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: white;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #334155;
+    text-decoration: none;
 }
 
-.mobile-user-menu {
+.mobile-logo-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.mobile-logo-text {
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+}
+
+/* 🎨 USER AREA PREMIUM */
+.mobile-user-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    min-height: 44px;
     position: relative;
 }
 
-.mobile-user-toggle {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.mobile-user-area:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-user-area:active {
+    transform: translateY(0);
+}
+
+/* 🎨 AVATAR PREMIUM */
+.mobile-user-avatar {
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
     color: white;
-    font-size: 1.2rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    flex-shrink: 0;
 }
 
-.mobile-user-toggle:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+/* 🎨 USER INFO PREMIUM */
+.mobile-user-info-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
 }
 
+.mobile-user-name-inline {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    line-height: 1.2;
+}
+
+.mobile-user-role {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 500;
+    line-height: 1;
+}
+
+/* 🎨 DROPDOWN INDICATOR */
+.mobile-dropdown-arrow {
+    margin-left: 4px;
+    font-size: 0.8rem;
+    color: #64748b;
+    transition: transform 0.3s ease;
+}
+
+.mobile-user-area.active .mobile-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* 🎨 DROPDOWN PREMIUM */
 .mobile-user-dropdown {
     position: absolute;
-    top: 55px;
+    top: calc(100% + 8px);
     right: 0;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    min-width: 250px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    min-width: 220px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     z-index: 1001;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
 }
 
 .mobile-user-dropdown.show {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
 }
 
 .mobile-user-dropdown::before {
     content: '';
     position: absolute;
-    top: -8px;
-    right: 20px;
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-bottom: 8px solid white;
+    top: -6px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.98);
+    transform: rotate(45deg);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.mobile-user-info {
-    padding: 16px;
-    border-bottom: 1px solid #f0f0f0;
+/* 🎨 USER INFO IN DROPDOWN */
+.mobile-user-info-dropdown {
+    padding: 20px;
+    border-bottom: 1px solid rgba(241, 245, 249, 0.8);
     text-align: center;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
 }
 
-.mobile-user-name {
+.mobile-user-avatar-large {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.mobile-user-name-dropdown {
     font-weight: 700;
-    color: #333;
+    color: #1e293b;
     font-size: 1rem;
     margin-bottom: 4px;
+    line-height: 1.3;
 }
 
 .mobile-user-email {
-    font-size: 0.85rem;
-    color: #666;
+    font-size: 0.8rem;
+    color: #64748b;
+    font-weight: 500;
 }
 
+/* 🎨 MENU ITEMS PREMIUM */
 .mobile-menu-item {
-    padding: 14px 16px;
+    padding: 16px 20px;
     cursor: pointer;
     transition: all 0.2s ease;
-    color: #333;
+    color: #334155;
     font-size: 0.95rem;
+    font-weight: 500;
     display: flex;
     align-items: center;
     gap: 12px;
-    border-bottom: 1px solid #f8f9fa;
+    border-bottom: 1px solid rgba(241, 245, 249, 0.6);
+    position: relative;
+    overflow: hidden;
 }
 
 .mobile-menu-item:last-child {
     border-bottom: none;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 16px 16px;
+}
+
+.mobile-menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+    transition: width 0.3s ease;
+}
+
+.mobile-menu-item:hover::before {
+    width: 100%;
 }
 
 .mobile-menu-item:hover {
-    background: #f8f9fa;
+    background: rgba(248, 250, 252, 0.8);
+    color: #1e293b;
+    transform: translateX(4px);
+}
+
+.mobile-menu-item:active {
+    transform: translateX(2px);
 }
 
 .mobile-menu-item.logout {
-    color: #dc3545;
+    color: #ef4444;
+    border-top: 1px solid rgba(241, 245, 249, 0.8);
+}
+
+.mobile-menu-item.logout::before {
+    background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, transparent 100%);
 }
 
 .mobile-menu-item.logout:hover {
-    background: #fee;
+    background: rgba(254, 242, 242, 0.8);
+    color: #dc2626;
+}
+
+/* 🎨 MENU ICONS */
+.mobile-menu-icon {
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
 }
 
 /* Sidebar - Oculto en mobile */
@@ -604,27 +752,32 @@ body.auth-body {
     margin-bottom: 25px;
 }
 
-/* 📱 FIX CRÍTICO: Responsive mobile mejorado - SIN FOOTER, CON HEADER CONTROLADO */
+/* 📱 RESPONSIVE MOBILE PREMIUM */
 @media (max-width: 768px) {
-    /* 🚨 FIX: Mostrar header mobile SOLO en portal (no en auth) */
+    /* 🎨 Mostrar header mobile premium */
     .mobile-header {
         display: block;
     }
 
-    /* 🚨 FIX: Ocultar completamente en páginas de auth */
+    /* 🚨 FIX: Ocultar COMPLETAMENTE en páginas de auth */
     body[data-page="auth"] .mobile-header,
-    body.auth-body .mobile-header {
+    body.auth-body .mobile-header,
+    body[class*="auth"] .mobile-header {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
 
     /* Ajustar body para el header SOLO en portal */
-    body:not([data-page="auth"]):not(.auth-body) {
-        padding-top: 70px;
+    body:not([data-page="auth"]):not(.auth-body):not([class*="auth"]) {
+        padding-top: 68px;
     }
 
     /* Auth pages sin padding-top */
     body[data-page="auth"],
-    body.auth-body {
+    body.auth-body,
+    body[class*="auth"] {
         padding-top: 0 !important;
     }
 
@@ -668,27 +821,51 @@ body.auth-body {
     .profile-form {
         padding: 30px 25px;
     }
+
+    /* 🎨 Ajustes de header en mobile pequeño */
+    .mobile-user-name-inline {
+        max-width: 100px;
+        font-size: 0.85rem;
+    }
+
+    .mobile-user-role {
+        font-size: 0.7rem;
+    }
 }
 
 /* Mobile muy pequeño */
 @media (max-width: 480px) {
     .mobile-header {
-        padding: 12px 15px;
+        padding: 10px 15px;
     }
 
     /* Solo ajustar padding en páginas que NO son auth */
-    body:not([data-page="auth"]):not(.auth-body) {
-        padding-top: 65px;
+    body:not([data-page="auth"]):not(.auth-body):not([class*="auth"]) {
+        padding-top: 60px;
     }
 
-    .mobile-user-toggle {
-        width: 40px;
-        height: 40px;
-        font-size: 1.1rem;
+    .mobile-user-area {
+        padding: 6px 10px;
+        gap: 8px;
+    }
+
+    .mobile-user-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .mobile-user-name-inline {
+        max-width: 80px;
+        font-size: 0.8rem;
+    }
+
+    .mobile-user-role {
+        font-size: 0.65rem;
     }
 
     .mobile-user-dropdown {
-        min-width: 220px;
+        min-width: 200px;
         right: -10px;
     }
 
@@ -697,17 +874,60 @@ body.auth-body {
     }
 }
 
-/* 🚨 FIX ADICIONAL: Prevenir parpadeos en auth pages */
+/* 🚨 PREVENCIÓN ADICIONAL DE PARPADEOS */
 body.auth-body .mobile-header,
-body[data-page="auth"] .mobile-header {
+body[data-page="auth"] .mobile-header,
+body[class*="auth"] .mobile-header {
     visibility: hidden !important;
     opacity: 0 !important;
     display: none !important;
+    position: absolute !important;
+    top: -9999px !important;
+    pointer-events: none !important;
 }
 
 /* Asegurar que auth pages no tengan espaciado superior */
 .auth-body,
-body[data-page="auth"] {
+body[data-page="auth"],
+body[class*="auth"] {
     padding-top: 0 !important;
     margin-top: 0 !important;
+}
+
+/* 🎨 ANIMACIONES PREMIUM */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    70% {
+        transform: scale(0.9);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.mobile-header {
+    animation: slideInDown 0.5s ease-out;
+}
+
+.mobile-user-dropdown.show {
+    animation: bounceIn 0.4s ease-out;
 }
