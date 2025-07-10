@@ -238,7 +238,10 @@ export const clearValidations = (inputIds) => {
  * @returns {string} Slug amigable (ej: "luis-cabrejo")
  */
 export const generateDistributorSlug = (fullName) => {
-    if (!fullName) return null;
+    if (!fullName || typeof fullName !== 'string') {
+        console.error('❌ generateDistributorSlug: fullName inválido:', fullName);
+        return null;
+    }
 
     try {
         // Extraer primer nombre + primer apellido
@@ -255,7 +258,7 @@ export const generateDistributorSlug = (fullName) => {
             .replace(/-+/g, '-') // Múltiples guiones a uno
             .replace(/^-|-$/g, ''); // Remover guiones al inicio/final
 
-        console.log('🎯 Slug generado:', `"${fullName}" → "${slug}"`);
+        console.log('🎯 Slug generado exitosamente:', `"${fullName}" → "${slug}"`);
         return slug;
     } catch (error) {
         console.error('❌ Error al generar slug:', error);
@@ -264,68 +267,114 @@ export const generateDistributorSlug = (fullName) => {
 };
 
 /**
- * 🚀 FIX CRÍTICO: Generar URL personalizada con distribuidor amigable
+ * 🚨 FIX CRÍTICO: Generar URL personalizada con debugging extensivo
  * @param {string} baseUrl - URL base de la herramienta
  * @param {Object} userProfile - Perfil completo del usuario
  * @returns {string} URL con parámetro distribuidor amigable
  */
 export const generatePersonalizedUrl = (baseUrl, userProfile) => {
-    // Validar parámetros
-    if (!baseUrl || typeof baseUrl !== 'string' || !userProfile) {
-        console.error('URL base debe ser string y userProfile requerido:', { baseUrl, userProfile });
-        return baseUrl || '#';
+    console.log('🔍 DEBUG generatePersonalizedUrl llamada con:', {
+        baseUrl: baseUrl,
+        userProfile: userProfile,
+        tipo_userProfile: typeof userProfile,
+        userProfile_keys: userProfile ? Object.keys(userProfile) : 'null'
+    });
+
+    // Validar parámetros básicos
+    if (!baseUrl || typeof baseUrl !== 'string') {
+        console.error('❌ URL base inválida:', baseUrl);
+        return '#';
+    }
+
+    if (!userProfile || typeof userProfile !== 'object') {
+        console.error('❌ userProfile inválido:', userProfile);
+        return baseUrl;
     }
 
     try {
         const url = new URL(baseUrl);
 
-        // Generar slug amigable del nombre
+        // 🚨 FIX CRÍTICO: Debugging extensivo del perfil
+        console.log('🔍 Analizando perfil del usuario:', {
+            id: userProfile.id,
+            full_name: userProfile.full_name,
+            email: userProfile.email,
+            whatsapp: userProfile.whatsapp
+        });
+
+        // Intentar generar slug amigable
         const slug = generateDistributorSlug(userProfile.full_name);
 
-        if (slug) {
-            // URL amigable con nombre del distribuidor
+        if (slug && slug.length > 0) {
+            // ✅ Usar parámetro distribuidor amigable
             url.searchParams.set('distribuidor', slug);
-            console.log('🎯 URL amigable generada:', `"${userProfile.full_name}" → ${url.toString()}`);
+            console.log('✅ URL amigable generada exitosamente:', {
+                usuario: userProfile.full_name,
+                slug: slug,
+                url_final: url.toString()
+            });
         } else {
-            // Fallback al UUID si no se puede generar slug
-            url.searchParams.set('socio', userProfile.id);
-            console.log('⚠️ Fallback a UUID usado para:', userProfile.full_name);
+            // 🚨 FIX: Fallback más robusto
+            const userId = userProfile.id || userProfile.user_id || userProfile.uuid;
+            if (userId) {
+                url.searchParams.set('socio', userId);
+                console.log('⚠️ Fallback a UUID usado:', {
+                    usuario: userProfile.full_name || 'Sin nombre',
+                    userId: userId,
+                    url_final: url.toString()
+                });
+            } else {
+                console.error('❌ No se encontró ID del usuario válido:', userProfile);
+                // Último fallback: usar timestamp
+                url.searchParams.set('ref', Date.now().toString());
+                console.log('🆘 Último fallback con timestamp usado');
+            }
         }
 
         const finalUrl = url.toString();
-        console.log('🔗 URL personalizada final:', finalUrl);
+        console.log('🔗 URL personalizada FINAL:', finalUrl);
         return finalUrl;
+
     } catch (error) {
-        console.error('❌ Error al generar URL personalizada:', error);
+        console.error('❌ Error crítico al generar URL personalizada:', error);
         return baseUrl;
     }
 };
 
 /**
- * 🚨 FIX CRÍTICO WHATSAPP: Generar enlace de WhatsApp SIN DESTINATARIO
- * CAMBIO PRINCIPAL: web.whatsapp.com → api.whatsapp.com
- * Solo con el mensaje y enlace personalizado
+ * 🚨 FIX CRÍTICO WHATSAPP: Generar enlace de WhatsApp con debugging
  * @param {string} message - Mensaje a enviar
  * @param {string} toolUrl - URL de la herramienta personalizada
- * @returns {string} URL de WhatsApp API sin destinatario
+ * @returns {string} URL de WhatsApp API
  */
 export const generateWhatsAppShareUrl = (message, toolUrl) => {
+    console.log('📱 DEBUG generateWhatsAppShareUrl llamada con:', {
+        message: message,
+        toolUrl: toolUrl,
+        tipo_toolUrl: typeof toolUrl
+    });
+
     try {
         // Construir mensaje completo
         let fullMessage = message || '¡Hola! Te comparto información sobre Gano Excel: ';
-        if (toolUrl && typeof toolUrl === 'string') {
+
+        if (toolUrl && typeof toolUrl === 'string' && toolUrl !== '#') {
             fullMessage += toolUrl;
+        } else {
+            console.warn('⚠️ toolUrl no válida, usando mensaje sin enlace:', toolUrl);
         }
 
         // Codificar mensaje para URL
         const encodedMessage = encodeURIComponent(fullMessage);
 
-        // 🚨 FIX CRÍTICO: api.whatsapp.com (NO web.whatsapp.com)
-        // Esto permite al usuario elegir contacto sin login
+        // 🚨 FIX CRÍTICO: api.whatsapp.com sin destinatario
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
 
-        console.log('✅ URL WhatsApp API generada (fix aplicado):', whatsappUrl);
-        console.log('📱 Usuario podrá elegir contacto sin login previo');
+        console.log('✅ URL WhatsApp generada correctamente:', {
+            mensaje_completo: fullMessage,
+            url_whatsapp: whatsappUrl
+        });
+
         return whatsappUrl;
     } catch (error) {
         console.error('❌ Error al generar URL de WhatsApp:', error);
@@ -334,32 +383,41 @@ export const generateWhatsAppShareUrl = (message, toolUrl) => {
 };
 
 /**
- * 🚨 FIX CRÍTICO WHATSAPP: Compartir herramienta via WhatsApp SIN DESTINATARIO
- * Ahora usa api.whatsapp.com para selección de contacto sin login
+ * 🚨 FIX CRÍTICO WHATSAPP: Compartir herramienta con debugging extensivo
  * @param {string} toolType - Tipo de herramienta ('catalog' o 'business')
- * @param {Object} userProfile - Perfil del usuario con ID
+ * @param {Object} userProfile - Perfil COMPLETO del usuario
  * @param {string} baseUrl - URL base de la herramienta
  */
 export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
-    try {
-        console.log('📱 shareToolWithWhatsApp llamada con:', { toolType, userProfile, baseUrl });
+    console.log('🚀 DEBUG shareToolWithWhatsApp - INICIO:', {
+        toolType: toolType,
+        userProfile: userProfile,
+        baseUrl: baseUrl
+    });
 
-        // Validar datos requeridos
-        if (!userProfile || !userProfile.id) {
+    try {
+        // 🚨 FIX: Validar datos de entrada más robustamente
+        if (!userProfile || typeof userProfile !== 'object') {
+            console.error('❌ userProfile inválido:', userProfile);
             showMessage('❌ Error: Información de usuario no disponible', 'error');
             return;
         }
 
-        // FIX: Verificar que baseUrl sea string válida
         if (!baseUrl || typeof baseUrl !== 'string') {
-            console.error('❌ Error: URL base no válida:', baseUrl);
+            console.error('❌ baseUrl inválida:', baseUrl);
             showMessage('❌ Error: URL de herramienta no disponible', 'error');
             return;
         }
 
-        // FIX CRÍTICO: Generar URL personalizada con parámetro socio
-        const personalizedUrl = generatePersonalizedUrl(baseUrl, userProfile.id);
-        console.log('🔗 URL personalizada:', personalizedUrl);
+        // 🚨 FIX CRÍTICO: Generar URL personalizada con perfil COMPLETO
+        console.log('🔗 Generando URL personalizada...');
+        const personalizedUrl = generatePersonalizedUrl(baseUrl, userProfile);
+
+        if (!personalizedUrl || personalizedUrl === '#') {
+            console.error('❌ No se pudo generar URL personalizada');
+            showMessage('❌ Error al generar enlace personalizado', 'error');
+            return;
+        }
 
         // Generar mensaje apropiado según el tipo de herramienta
         let whatsappMessage;
@@ -371,24 +429,28 @@ export const shareToolWithWhatsApp = (toolType, userProfile, baseUrl) => {
             whatsappMessage = '¡Hola! Te comparto información sobre Gano Excel: ';
         }
 
-        // 🚨 FIX CRÍTICO: Crear enlace de WhatsApp con API.WHATSAPP.COM
+        // 🚨 FIX CRÍTICO: Crear enlace de WhatsApp
+        console.log('📱 Generando enlace de WhatsApp...');
         const whatsappUrl = generateWhatsAppShareUrl(whatsappMessage, personalizedUrl);
 
         if (whatsappUrl === '#') {
+            console.error('❌ No se pudo generar enlace de WhatsApp');
             showMessage('❌ Error al generar enlace de WhatsApp', 'error');
             return;
         }
 
-        // Abrir WhatsApp API (permite elegir contacto)
-        console.log('🚀 Abriendo WhatsApp API (fix aplicado):', whatsappUrl);
+        // ✅ Abrir WhatsApp API
+        console.log('🚀 Abriendo WhatsApp con URL:', whatsappUrl);
         window.open(whatsappUrl, '_blank');
 
-        // Mostrar confirmación específica del fix
+        // Mostrar confirmación
         const toolName = toolType === 'catalog' ? 'Catálogo' : 'Modelo de Negocio';
-        showMessage(`✅ ${toolName} listo para compartir - Elige tu contacto en WhatsApp`, 'success');
+        showMessage(`✅ ${toolName} listo para compartir`, 'success');
+
+        console.log('✅ shareToolWithWhatsApp completado exitosamente');
 
     } catch (error) {
-        console.error('❌ Error al compartir herramienta:', error);
+        console.error('❌ Error crítico en shareToolWithWhatsApp:', error);
         showMessage('❌ Error al generar enlace de WhatsApp', 'error');
     }
 };
@@ -495,6 +557,11 @@ export const logout = async () => {
  * @param {Object} userProfile - Perfil del usuario (opcional)
  */
 export const openTool = (baseUrl, userProfile = null) => {
+    console.log('🔗 DEBUG openTool llamada con:', {
+        baseUrl: baseUrl,
+        userProfile: userProfile
+    });
+
     try {
         // FIX: Verificar que baseUrl sea string
         if (!baseUrl || typeof baseUrl !== 'string') {
@@ -503,10 +570,10 @@ export const openTool = (baseUrl, userProfile = null) => {
             return;
         }
 
-        // Generar URL personalizada si hay ID de usuario
+        // Generar URL personalizada si hay perfil de usuario
         let toolUrl = baseUrl;
-        if (userProfile && userProfile.id) {
-            toolUrl = generatePersonalizedUrl(baseUrl, userProfile.id);
+        if (userProfile && typeof userProfile === 'object') {
+            toolUrl = generatePersonalizedUrl(baseUrl, userProfile);
         }
 
         // Abrir en nueva pestaña
@@ -521,15 +588,18 @@ export const openTool = (baseUrl, userProfile = null) => {
 };
 
 /**
- * 🎯 NUEVO: Generar enlaces personalizados para mostrar en perfil
+ * 🎯 FUNCIÓN PARA ENLACES EN PERFIL: Generar enlaces personalizados
  * @param {Object} userProfile - Perfil completo del usuario
  * @returns {Object} Objeto con enlaces personalizados
  */
 export const getPersonalizedLinks = (userProfile) => {
-    if (!userProfile) {
+    console.log('🔗 DEBUG getPersonalizedLinks llamada con:', userProfile);
+
+    if (!userProfile || typeof userProfile !== 'object') {
+        console.warn('⚠️ userProfile no válido, devolviendo enlaces por defecto');
         return {
-            catalog: '#',
-            business: '#'
+            catalog: 'https://catalogo.4millones.com/',
+            business: 'https://oportunidad.4millones.com/'
         };
     }
 
@@ -538,7 +608,10 @@ export const getPersonalizedLinks = (userProfile) => {
         const catalogUrl = generatePersonalizedUrl(TOOL_CONFIG.catalog.url, userProfile);
         const businessUrl = generatePersonalizedUrl(TOOL_CONFIG.business.url, userProfile);
 
-        console.log('🔗 Enlaces personalizados generados:', { catalogUrl, businessUrl });
+        console.log('🔗 Enlaces personalizados generados exitosamente:', {
+            catalog: catalogUrl,
+            business: businessUrl
+        });
 
         return {
             catalog: catalogUrl,
@@ -552,6 +625,8 @@ export const getPersonalizedLinks = (userProfile) => {
         };
     }
 };
+
+// Configuración de herramientas
 export const TOOL_CONFIG = {
     catalog: {
         name: 'Catálogo Premium',
@@ -642,17 +717,3 @@ export const forceHideHeaderInAuth = () => {
         console.log('📱 Header mobile forzadamente oculto en página auth');
     }
 };
-
-// ===== EXPLICACIÓN DE CÓDIGOS UUID =====
-
-/**
- * EXPLICACIÓN: El código que ves (5460d8d0-f3d4-4db0-99ca-48650a41ef57)
- * es el UUID (Universally Unique Identifier) del usuario en Supabase.
- *
- * - Cada usuario registrado tiene un UUID único
- * - Este UUID es diferente para cada cuenta
- * - Se usa como parámetro ?socio=UUID para tracking
- * - Es lo correcto y esperado para identificar al distribuidor
- *
- * No necesitas cambiarlo - es el sistema funcionando correctamente.
- */
