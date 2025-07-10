@@ -23,6 +23,13 @@
     z-index: 1000;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
+    /* 🚨 FIX: Prevenir parpadeo inicial */
+    opacity: 0;
+}
+
+/* 🚨 FIX: Mostrar header solo cuando esté listo */
+.mobile-header.show {
+    opacity: 1;
 }
 
 /* 🚨 FIX CRÍTICO: Ocultar completamente en páginas de autenticación */
@@ -47,9 +54,10 @@ body[class*="auth"] {
     justify-content: space-between;
     align-items: center;
     max-width: 100%;
+    height: 44px;
 }
 
-/* 🎨 LOGOTIPO PREMIUM */
+/* 🎨 LOGOTIPO PREMIUM CON SVG OPTIMIZADO */
 .mobile-logo {
     display: flex;
     align-items: center;
@@ -58,6 +66,12 @@ body[class*="auth"] {
     font-weight: 700;
     color: #334155;
     text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.mobile-logo:hover {
+    transform: scale(1.02);
 }
 
 .mobile-logo-img {
@@ -66,6 +80,22 @@ body[class*="auth"] {
     border-radius: 8px;
     object-fit: contain;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    transition: all 0.3s ease;
+    /* Optimizaciones para SVG */
+    image-rendering: crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+.mobile-logo-img:hover {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+    transform: scale(1.05);
+}
+
+/* Fallback si no hay imagen */
+.mobile-logo-img:not([src]),
+.mobile-logo-img[src=""] {
+    display: none;
 }
 
 .mobile-logo-text {
@@ -76,6 +106,14 @@ body[class*="auth"] {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.02em;
+    transition: all 0.3s ease;
+}
+
+.mobile-logo:hover .mobile-logo-text {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4c93 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 /* 🎨 USER AREA PREMIUM */
@@ -752,6 +790,149 @@ body[class*="auth"] {
     margin-bottom: 25px;
 }
 
+/* 🆕 ESTILOS PARA FUNCIONALIDAD DE COMPARTIR EN PERFIL */
+
+/* Estilos para botones de compartir */
+.share-button {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    margin-left: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(37, 211, 102, 0.2);
+}
+
+.share-button:hover {
+    background: #1a9e52;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(37, 211, 102, 0.3);
+}
+
+.share-button:active {
+    transform: translateY(0);
+}
+
+.share-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.link-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.link-text {
+    flex: 1;
+    min-width: 200px;
+    word-break: break-all;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.copy-button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.copy-button:hover {
+    background: #5a6fd8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.copy-button:active {
+    transform: translateY(0);
+}
+
+/* Estilo especial para la sección de afiliación */
+#affiliate-section {
+    border: 2px dashed rgba(102, 126, 234, 0.2);
+    transition: all 0.3s ease;
+}
+
+#affiliate-section:hover {
+    border-color: rgba(102, 126, 234, 0.4);
+    background: rgba(102, 126, 234, 0.02);
+}
+
+/* Animación para mostrar/ocultar botones */
+.copy-button,
+.share-button {
+    opacity: 1;
+    transform: scale(1);
+    transition: all 0.3s ease;
+}
+
+.copy-button[style*="display: none"],
+.share-button[style*="display: none"] {
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+/* 🚨 OPTIMIZACIÓN DE LOADING PARA PREVENIR PARPADEOS */
+
+/* Prevenir parpadeo del contenido principal */
+#main-content {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+#main-content.fade-in {
+    opacity: 1;
+}
+
+/* Loading optimizado */
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    color: white;
+    transition: opacity 0.3s ease;
+}
+
+.loading-container.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
 /* 📱 RESPONSIVE MOBILE PREMIUM */
 @media (max-width: 768px) {
     /* 🎨 Mostrar header mobile premium */
@@ -831,6 +1012,24 @@ body[class*="auth"] {
     .mobile-user-role {
         font-size: 0.7rem;
     }
+
+    /* Ajustes para botones de compartir en mobile */
+    .link-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .link-text {
+        min-width: auto;
+        margin-bottom: 8px;
+    }
+
+    .copy-button,
+    .share-button {
+        align-self: flex-start;
+        margin-left: 0;
+    }
 }
 
 /* Mobile muy pequeño */
@@ -872,6 +1071,16 @@ body[class*="auth"] {
     .content-area {
         padding: 20px 15px;
     }
+
+    /* Optimización del logo en pantallas muy pequeñas */
+    .mobile-logo-img {
+        width: 32px;
+        height: 32px;
+    }
+
+    .mobile-logo-text {
+        font-size: 1rem;
+    }
 }
 
 /* 🚨 PREVENCIÓN ADICIONAL DE PARPADEOS */
@@ -906,6 +1115,17 @@ body[class*="auth"] {
     }
 }
 
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @keyframes bounceIn {
     0% {
         opacity: 0;
@@ -924,10 +1144,44 @@ body[class*="auth"] {
     }
 }
 
+@keyframes staggerIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 .mobile-header {
     animation: slideInDown 0.5s ease-out;
 }
 
 .mobile-user-dropdown.show {
     animation: bounceIn 0.4s ease-out;
+}
+
+/* Animación suave para la transición de contenido */
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Animación para elementos que aparecen en secuencia */
+.animate-slide-up {
+    animation: slideInUp 0.6s ease-out;
+}
+
+.animate-stagger {
+    animation: slideInUp 0.8s ease-out 0.2s both;
 }

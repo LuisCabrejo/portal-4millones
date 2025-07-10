@@ -12,6 +12,63 @@
     <!-- CSS modular -->
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/components.css">
+
+    <style>
+        /* Estilos para botones de compartir */
+        .share-button {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            margin-left: 10px;
+        }
+
+        .share-button:hover {
+            background: #1a9e52;
+            transform: translateY(-1px);
+        }
+
+        .share-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .link-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .link-text {
+            flex: 1;
+            min-width: 200px;
+            word-break: break-all;
+        }
+
+        .copy-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+            background: #5a6fd8;
+        }
+    </style>
 </head>
 <body>
     <!-- Loading state -->
@@ -130,20 +187,57 @@
                             </button>
                         </form>
 
-                        <!-- Información adicional -->
+                        <!-- Enlaces personalizados mejorados -->
                         <div class="mt-5">
                             <h3 style="color: var(--dark-text); margin-bottom: 20px;">Enlaces Personalizados</h3>
                             <div class="card">
                                 <p style="margin-bottom: 15px; color: var(--text-secondary);">
                                     Cuando compartas las herramientas del portal, se incluirá automáticamente tu información:
                                 </p>
+
+                                <!-- Catálogo -->
                                 <div style="background: var(--bg-light); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
                                     <strong>Catálogo:</strong>
-                                    <span id="catalog-link">https://catalogo.4millones.com/?distribuidor=tu-nombre</span>
+                                    <div class="link-container">
+                                        <span class="link-text" id="catalog-link">https://catalogo.4millones.com/?distribuidor=tu-nombre</span>
+                                        <button class="copy-button" onclick="copyToClipboard('catalog-link')" title="Copiar enlace">
+                                            📋 Copiar
+                                        </button>
+                                        <button class="share-button" id="share-catalog-btn" title="Compartir por WhatsApp">
+                                            📱 Compartir
+                                        </button>
+                                    </div>
                                 </div>
-                                <div style="background: var(--bg-light); padding: 15px; border-radius: 12px;">
+
+                                <!-- Modelo de Negocio -->
+                                <div style="background: var(--bg-light); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
                                     <strong>Modelo de Negocio:</strong>
-                                    <span id="business-link">https://oportunidad.4millones.com/?distribuidor=tu-nombre</span>
+                                    <div class="link-container">
+                                        <span class="link-text" id="business-link">https://oportunidad.4millones.com/?distribuidor=tu-nombre</span>
+                                        <button class="copy-button" onclick="copyToClipboard('business-link')" title="Copiar enlace">
+                                            📋 Copiar
+                                        </button>
+                                        <button class="share-button" id="share-business-btn" title="Compartir por WhatsApp">
+                                            📱 Compartir
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- 🆕 Enlace de Afiliación -->
+                                <div style="background: var(--bg-light); padding: 15px; border-radius: 12px;" id="affiliate-section">
+                                    <strong>Enlace de Afiliación:</strong>
+                                    <div class="link-container">
+                                        <span class="link-text" id="affiliate-display" style="color: #718096;">No configurado</span>
+                                        <button class="copy-button" id="copy-affiliate-btn" onclick="copyToClipboard('affiliate-display')" title="Copiar enlace de afiliación" style="display: none;">
+                                            📋 Copiar
+                                        </button>
+                                        <button class="share-button" id="share-affiliate-btn" title="Compartir enlace de afiliación por WhatsApp" style="display: none;">
+                                            📱 Compartir
+                                        </button>
+                                    </div>
+                                    <small style="color: #718096; display: block; margin-top: 5px;">
+                                        Configura tu enlace de afiliación arriba para poder compartirlo
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -165,14 +259,12 @@
 
     <!-- Scripts modulares -->
     <script type="module">
-        // 🚨 FIX CRÍTICO: Imports corregidos - ELIMINADA importación duplicada
         import {
             initializeSupabase,
             authGuard,
             getUserProfile,
             updateUserProfile,
             logoutUser
-            // ❌ ELIMINADO: getPersonalizedLinks (estaba duplicado)
         } from '../assets/js/auth.js';
 
         import {
@@ -187,10 +279,71 @@
             formatUserName,
             formatWhatsApp,
             validateField,
-            getPersonalizedLinks    // ✅ ÚNICA importación válida desde utils.js
+            getPersonalizedLinks,
+            generateWhatsAppShareUrl
         } from '../assets/js/utils.js';
 
         import { MESSAGES } from '../assets/js/config.js';
+
+        // Variable global para el perfil
+        let currentUserProfile = null;
+
+        // 📋 Función para copiar al portapapeles
+        window.copyToClipboard = async (elementId) => {
+            const element = document.getElementById(elementId);
+            const text = element.textContent.trim();
+
+            if (!text || text === 'No configurado') {
+                showMessage('⚠️ No hay contenido para copiar', 'error');
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(text);
+                showMessage('✅ Enlace copiado al portapapeles', 'success');
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                // Fallback para navegadores sin soporte de clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showMessage('✅ Enlace copiado al portapapeles', 'success');
+            }
+        };
+
+        // 📱 Función para compartir enlace por WhatsApp
+        const shareViaWhatsApp = (linkType, linkUrl) => {
+            if (!linkUrl || linkUrl === 'No configurado') {
+                showMessage('⚠️ No hay enlace para compartir', 'error');
+                return;
+            }
+
+            let message = '';
+            switch (linkType) {
+                case 'catalog':
+                    message = '¡Hola! Te comparto nuestro catálogo completo de productos Gano Excel: ';
+                    break;
+                case 'business':
+                    message = '¡Hola! Te comparto información sobre la oportunidad de negocio con Gano Excel: ';
+                    break;
+                case 'affiliate':
+                    message = '¡Hola! Te comparto mi enlace de afiliación de Gano Excel: ';
+                    break;
+                default:
+                    message = '¡Hola! Te comparto este enlace: ';
+            }
+
+            const whatsappUrl = generateWhatsAppShareUrl(message, linkUrl);
+            if (whatsappUrl !== '#') {
+                window.open(whatsappUrl, '_blank');
+                showMessage('✅ Abriendo WhatsApp para compartir', 'success');
+            } else {
+                showMessage('❌ Error al generar enlace de WhatsApp', 'error');
+            }
+        };
 
         // Verificar que Supabase esté cargado e inicializar
         if (typeof supabase === 'undefined') {
@@ -220,6 +373,31 @@
                 // Enlaces personalizados
                 const catalogLinkEl = document.getElementById('catalog-link');
                 const businessLinkEl = document.getElementById('business-link');
+                const affiliateDisplayEl = document.getElementById('affiliate-display');
+                const copyAffiliateBtnEl = document.getElementById('copy-affiliate-btn');
+                const shareAffiliateBtnEl = document.getElementById('share-affiliate-btn');
+
+                // Botones de compartir
+                const shareCatalogBtn = document.getElementById('share-catalog-btn');
+                const shareBusinessBtn = document.getElementById('share-business-btn');
+
+                // Función para actualizar la visualización del enlace de afiliación
+                const updateAffiliateDisplay = (affiliateLink) => {
+                    if (affiliateLink && affiliateLink.trim()) {
+                        affiliateDisplayEl.textContent = affiliateLink;
+                        affiliateDisplayEl.style.color = '#1a202c';
+                        copyAffiliateBtnEl.style.display = 'inline-flex';
+                        shareAffiliateBtnEl.style.display = 'inline-flex';
+
+                        // Agregar event listener para compartir
+                        shareAffiliateBtnEl.onclick = () => shareViaWhatsApp('affiliate', affiliateLink);
+                    } else {
+                        affiliateDisplayEl.textContent = 'No configurado';
+                        affiliateDisplayEl.style.color = '#718096';
+                        copyAffiliateBtnEl.style.display = 'none';
+                        shareAffiliateBtnEl.style.display = 'none';
+                    }
+                };
 
                 // Función para cargar datos del perfil
                 const loadProfile = async () => {
@@ -232,6 +410,7 @@
                             return;
                         }
 
+                        currentUserProfile = profile;
                         console.log('📋 Perfil COMPLETO cargado en profile.html:', profile);
 
                         // Actualizar información en sidebar
@@ -252,13 +431,20 @@
                         whatsappInput.value = profile.whatsapp || '';
                         affiliateLinkInput.value = profile.affiliate_link || '';
 
-                        // 🚨 FIX CRÍTICO: Mostrar enlaces personalizados usando perfil COMPLETO
+                        // Generar enlaces personalizados
                         console.log('🔗 Generando enlaces personalizados para:', profile);
                         const personalizedLinks = getPersonalizedLinks(profile);
                         console.log('✅ Enlaces personalizados generados:', personalizedLinks);
 
                         catalogLinkEl.textContent = personalizedLinks.catalog;
                         businessLinkEl.textContent = personalizedLinks.business;
+
+                        // Actualizar visualización del enlace de afiliación
+                        updateAffiliateDisplay(profile.affiliate_link);
+
+                        // Configurar event listeners para compartir herramientas
+                        shareCatalogBtn.onclick = () => shareViaWhatsApp('catalog', personalizedLinks.catalog);
+                        shareBusinessBtn.onclick = () => shareViaWhatsApp('business', personalizedLinks.business);
 
                         showMainContent();
 
@@ -298,9 +484,15 @@
                             '✓ URL válida',
                             'URL inválida (ej: https://tu-enlace-gano.com)'
                         );
+
+                        // Actualizar preview en tiempo real
+                        if (isValid) {
+                            updateAffiliateDisplay(url);
+                        }
                     } else {
                         affiliateLinkInput.classList.remove('valid', 'invalid');
                         document.getElementById('affiliate-validation').innerHTML = '<small>Tu enlace personalizado de Gano Excel para referencias</small>';
+                        updateAffiliateDisplay('');
                     }
                 });
 
@@ -361,12 +553,17 @@
                         const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
                         profileAvatarEl.textContent = initials;
 
-                        // 🚨 FIX CRÍTICO: Actualizar enlaces personalizados con perfil actualizado
+                        // Actualizar perfil global
                         if (updatedProfile) {
-                            console.log('🔗 Actualizando enlaces con perfil actualizado:', updatedProfile);
+                            currentUserProfile = updatedProfile;
+
+                            // Actualizar enlaces personalizados
                             const personalizedLinks = getPersonalizedLinks(updatedProfile);
                             catalogLinkEl.textContent = personalizedLinks.catalog;
                             businessLinkEl.textContent = personalizedLinks.business;
+
+                            // Actualizar enlace de afiliación
+                            updateAffiliateDisplay(updatedProfile.affiliate_link);
                         }
 
                     } catch (error) {
