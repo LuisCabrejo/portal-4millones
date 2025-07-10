@@ -233,23 +233,67 @@ export const clearValidations = (inputIds) => {
 // ===== 🚀 FUNCIONES CRÍTICAS CORREGIDAS - WHATSAPP API FIX =====
 
 /**
- * FIX CRÍTICO: Generar URL personalizada con parámetro socio
- * @param {string} baseUrl - URL base de la herramienta
- * @param {string} userId - ID del usuario/socio (UUID de Supabase)
- * @returns {string} URL con parámetro socio
+ * 🎯 NUEVO: Generar slug amigable desde nombre completo
+ * @param {string} fullName - Nombre completo del usuario
+ * @returns {string} Slug amigable (ej: "luis-cabrejo")
  */
-export const generatePersonalizedUrl = (baseUrl, userId) => {
-    // FIX: Validar que baseUrl sea string
-    if (!baseUrl || typeof baseUrl !== 'string' || !userId) {
-        console.error('URL base debe ser string y userId requerido:', { baseUrl, userId });
+export const generateDistributorSlug = (fullName) => {
+    if (!fullName) return null;
+
+    try {
+        // Extraer primer nombre + primer apellido
+        const parts = fullName.trim().split(' ');
+        const nombreApellido = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : parts[0];
+
+        // Convertir a slug amigable
+        const slug = nombreApellido
+            .toLowerCase()
+            .normalize('NFD') // Descomponer caracteres acentuados
+            .replace(/[\u0300-\u036f]/g, '') // Remover diacríticos
+            .replace(/[^a-z0-9\s]/g, '') // Solo letras, números y espacios
+            .replace(/\s+/g, '-') // Espacios a guiones
+            .replace(/-+/g, '-') // Múltiples guiones a uno
+            .replace(/^-|-$/g, ''); // Remover guiones al inicio/final
+
+        console.log('🎯 Slug generado:', `"${fullName}" → "${slug}"`);
+        return slug;
+    } catch (error) {
+        console.error('❌ Error al generar slug:', error);
+        return null;
+    }
+};
+
+/**
+ * 🚀 FIX CRÍTICO: Generar URL personalizada con distribuidor amigable
+ * @param {string} baseUrl - URL base de la herramienta
+ * @param {Object} userProfile - Perfil completo del usuario
+ * @returns {string} URL con parámetro distribuidor amigable
+ */
+export const generatePersonalizedUrl = (baseUrl, userProfile) => {
+    // Validar parámetros
+    if (!baseUrl || typeof baseUrl !== 'string' || !userProfile) {
+        console.error('URL base debe ser string y userProfile requerido:', { baseUrl, userProfile });
         return baseUrl || '#';
     }
 
     try {
         const url = new URL(baseUrl);
-        url.searchParams.set('socio', userId);
+
+        // Generar slug amigable del nombre
+        const slug = generateDistributorSlug(userProfile.full_name);
+
+        if (slug) {
+            // URL amigable con nombre del distribuidor
+            url.searchParams.set('distribuidor', slug);
+            console.log('🎯 URL amigable generada:', `"${userProfile.full_name}" → ${url.toString()}`);
+        } else {
+            // Fallback al UUID si no se puede generar slug
+            url.searchParams.set('socio', userProfile.id);
+            console.log('⚠️ Fallback a UUID usado para:', userProfile.full_name);
+        }
+
         const finalUrl = url.toString();
-        console.log('🔗 URL personalizada generada:', finalUrl);
+        console.log('🔗 URL personalizada final:', finalUrl);
         return finalUrl;
     } catch (error) {
         console.error('❌ Error al generar URL personalizada:', error);

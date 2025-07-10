@@ -24,8 +24,7 @@
                 <!-- <img src="assets/images/logo-4millones.png" alt="4 Millones" class="mobile-logo-img"> -->
 
                 <!-- Opción 2: Texto premium (temporal) -->
-                <img src="assets/images/logo-4millones.svg" alt="4 Millones" class="mobile-logo-img">
-
+                <div class="mobile-logo-text">4 Millones</div>
             </div>
 
             <!-- 🎨 USER AREA PREMIUM -->
@@ -263,7 +262,7 @@
             showMessage,
             clearMessage,
             shareToolWithWhatsApp,  // ✅ WhatsApp funcionando
-            openTool,
+            generatePersonalizedUrl, // 🎯 Nueva función para URLs amigables
             logout,
             TOOL_CONFIG,
             initializeMobileHeaderControl  // 📱 Control de header mobile
@@ -468,15 +467,18 @@
                                     shareToolWithWhatsApp(toolType, currentUserProfile, toolUrl);
 
                                 } else if (action === 'open') {
-                                    // Abrir herramienta directamente
+                                    // 🎯 Abrir herramienta con slug amigable
                                     target.textContent = 'Abriendo...';
 
                                     if (!toolUrl) {
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    console.log(`🔗 Abriendo ${toolType}:`, toolUrl);
-                                    openTool(toolUrl, currentUserProfile);
+                                    console.log(`🔗 Abriendo ${toolType} con perfil:`, currentUserProfile);
+                                    // 🚀 CAMBIO PRINCIPAL: Pasar perfil completo en lugar de solo URL
+                                    const personalizedUrl = generatePersonalizedUrl(toolUrl, currentUserProfile);
+                                    window.open(personalizedUrl, '_blank');
+                                    showMessage('✅ Abriendo herramienta', 'success');
                                 }
 
                             } catch (error) {
