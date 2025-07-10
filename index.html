@@ -1,581 +1,426 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organización 4 Millones - Centro de Socios</title>
+/**
+ * 🎯 SISTEMA DE DISTRIBUIDORES PARA CATÁLOGO - VERSIÓN HÍBRIDA
+ * Este archivo personaliza el catálogo según el distribuidor que lo comparte
+ * Consulta TANTO auth.users COMO profiles para obtener datos completos
+ */
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+// 🔧 Configuración de Supabase (usar las mismas credenciales del portal)
+const SUPABASE_URL = 'https://ovsvocjvjnqfaaugwnxg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92c3ZvY2p2am5xZmFhdWd3bnhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE3ODEyMzcsImV4cCI6MjA2NzM1NzIzN30.ZErzsooaSXnS-NdmMYD0JcZFupFgrXfMLH-nOvU1NTE';
 
-    <!-- CSS modular -->
-    <link rel="stylesheet" href="assets/css/main.css">
-    <link rel="stylesheet" href="assets/css/components.css">
+// Inicializar cliente Supabase
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <style>
-        /* 🚨 FIX: Prevenir parpadeo inicial */
-        #main-content {
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
+/**
+ * 🎯 Generar slug desde nombre completo (igual que en portal)
+ * @param {string} fullName - Nombre completo del usuario
+ * @returns {string} Slug amigable
+ */
+function generarSlugDesdNombre(fullName) {
+    if (!fullName) return null;
 
-        #main-content.fade-in {
-            opacity: 1;
-        }
+    try {
+        // Extraer primer nombre + primer apellido
+        const parts = fullName.trim().split(' ');
+        const nombreApellido = parts.length >= 2 ? `${parts[0]} ${parts[1]}` : parts[0];
 
-        .mobile-header {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+        // Convertir a slug amigable (misma lógica que el portal)
+        const slug = nombreApellido
+            .toLowerCase()
+            .normalize('NFD') // Descomponer caracteres acentuados
+            .replace(/[\u0300-\u036f]/g, '') // Remover diacríticos
+            .replace(/[^a-z0-9\s]/g, '') // Solo letras, números y espacios
+            .replace(/\s+/g, '-') // Espacios a guiones
+            .replace(/-+/g, '-') // Múltiples guiones a uno
+            .replace(/^-|-$/g, ''); // Remover guiones al inicio/final
 
-        .mobile-header.show {
-            opacity: 1;
-        }
-    </style>
-</head>
-<!-- 📱 FIX: Marcado como página de portal (no auth) -->
-<body data-page="portal">
-    <!-- 🎨 HEADER MOBILE PREMIUM CON LOGO -->
-    <header class="mobile-header" id="mobile-header">
-        <div class="mobile-header-content">
-            <!-- 🎨 LOGOTIPO PREMIUM SOLO SVG -->
-            <div class="mobile-logo">
-                <img src="assets/images/logo-4millones.svg" alt="4 Millones" class="mobile-logo-img">
-            </div>
+        return slug;
+    } catch (error) {
+        console.error('❌ Error generando slug:', error);
+        return null;
+    }
+}
 
-            <!-- 🎨 USER AREA PREMIUM -->
-            <div class="mobile-user-area" id="mobile-user-area">
-                <div class="mobile-user-avatar" id="mobile-user-avatar">
-                    U
-                </div>
-                <div class="mobile-user-info-inline">
-                    <div class="mobile-user-name-inline" id="mobile-user-name-inline">
-                        Usuario
-                    </div>
-                    <div class="mobile-user-role">
-                        Socio Estratégico
-                    </div>
-                </div>
-                <div class="mobile-dropdown-arrow">▼</div>
+/**
+ * 🔍 Obtener todos los usuarios desde múltiples fuentes (HÍBRIDO)
+ * @returns {Array} Lista de usuarios con datos completos
+ */
+async function obtenerTodosLosUsuarios() {
+    try {
+        console.log('🔍 Obteniendo usuarios desde múltiples fuentes...');
 
-                <!-- 🎨 DROPDOWN PREMIUM -->
-                <div class="mobile-user-dropdown" id="mobile-user-dropdown">
-                    <div class="mobile-user-info-dropdown">
-                        <div class="mobile-user-avatar-large" id="mobile-user-avatar-large">
-                            U
-                        </div>
-                        <div class="mobile-user-name-dropdown" id="mobile-user-name-dropdown">
-                            Usuario
-                        </div>
-                        <div class="mobile-user-email" id="mobile-user-email-dropdown">
-                            email@ejemplo.com
-                        </div>
-                    </div>
-                    <div class="mobile-menu-item" id="mobile-menu-profile">
-                        <span class="mobile-menu-icon">⚙️</span>
-                        Mi Perfil
-                    </div>
-                    <div class="mobile-menu-item logout" id="mobile-menu-logout">
-                        <span class="mobile-menu-icon">🚪</span>
-                        Cerrar Sesión
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+        let usuarios = [];
 
-    <!-- Loading state optimizado -->
-    <div id="loading" class="loading-container">
-        <div class="loading-spinner large"></div>
-        <p>Verificando autenticación...</p>
-    </div>
+        // FUENTE 1: Tabla profiles (datos completos del portal)
+        console.log('📋 Consultando tabla profiles...');
+        const { data: profiles, error: profilesError } = await supabaseClient
+            .from('profiles')
+            .select('id, full_name, whatsapp, email')
+            .not('full_name', 'is', null);
 
-    <!-- Main content (hidden initially) -->
-    <div id="main-content" style="display: none;">
-        <div class="particles">
-            <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
-            <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
-            <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
-            <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
-            <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
-            <div class="particle" style="left: 60%; animation-delay: 5s;"></div>
-            <div class="particle" style="left: 70%; animation-delay: 6s;"></div>
-            <div class="particle" style="left: 80%; animation-delay: 7s;"></div>
-            <div class="particle" style="left: 90%; animation-delay: 0.5s;"></div>
-        </div>
-
-        <div class="main-container">
-            <aside class="sidebar">
-                <div class="sidebar-header">
-                    <div class="logo-container">
-                        <h2>Proyecto 4 Millones</h2>
-                        <p>Centro de Socios Estratégicos</p>
-                    </div>
-                </div>
-
-                <!-- User info section - Solo Desktop -->
-                <div class="user-info" id="user-info">
-                    <div class="user-name" id="user-name">Cargando...</div>
-                    <div class="user-email" id="user-email">Cargando...</div>
-                    <button class="logout-btn" id="logout-btn">Cerrar Sesión</button>
-                </div>
-
-                <nav class="sidebar-nav">
-                    <a href="#" class="active">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
-                        </svg>
-                        <span>Dashboard</span>
-                    </a>
-                    <a href="pages/profile.html">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                        <span>Mi Perfil</span>
-                    </a>
-                </nav>
-
-                <div class="sidebar-footer">
-                    &copy; 2025 - 4millones.com
-                </div>
-            </aside>
-
-            <main class="content-area">
-                <header class="content-header">
-                    <h1>Organización 4 Millones</h1>
-                    <p id="main-description">Tu centro de herramientas premium para construir tu propio activo empresarial con el respaldo de una organización líder.</p>
-                    <div class="welcome-message" id="welcome-message">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" style="width: 16px; height: 16px; margin-right: 8px;">
-                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
-                        </svg>
-                        <span id="welcome-text">Herramientas de Última Generación</span>
-                    </div>
-                </header>
-
-                <!-- Mensajes del sistema -->
-                <div id="message" style="display: none; margin-bottom: 20px;"></div>
-
-                <div class="tools-grid">
-                    <!-- 🚨 FIX: Card Catálogo con WhatsApp API corregida -->
-                    <div class="tool-card">
-                        <div class="tool-card-image" style="background-image: url('https://4millones.com/wp-content/uploads/2025/07/gano-cafe-clasico-catalogo-min.png');">
-                            <div class="status-badge available">Disponible</div>
-                        </div>
-                        <div class="tool-card-content">
-                            <h3>Catálogo Interactivo</h3>
-                            <p>Presenta y comparte fácilmente todo el portafolio de productos con tus clientes para cerrar más ventas. Herramienta optimizada para conversiones.</p>
-                            <!-- ✅ WhatsApp funcionando con api.whatsapp.com -->
-                            <button class="btn" id="catalog-share-btn" data-tool="catalog" data-action="share" data-url="https://catalogo.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
-                                📱 Compartir vía WhatsApp
-                            </button>
-                            <button class="btn" id="catalog-open-btn" data-tool="catalog" data-action="open" data-url="https://catalogo.4millones.com/">
-                                🔗 Abrir Catálogo
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 🚨 FIX: Card Modelo de Negocio con WhatsApp API corregida -->
-                    <div class="tool-card">
-                        <div class="tool-card-image" style="background-image: url('https://images.unsplash.com/photo-1556740738-b6a63e27c4df?q=80&w=1470&auto=format&fit=crop');">
-                            <div class="status-badge available">Disponible</div>
-                        </div>
-                        <div class="tool-card-content">
-                            <h3>Modelo de Negocio</h3>
-                            <p>La herramienta clave para presentar el modelo de negocio. Expande tu organización invitando nuevos socios y construye un activo empresarial que genere ingresos residuales.</p>
-                            <!-- ✅ WhatsApp funcionando con api.whatsapp.com -->
-                            <button class="btn" id="business-share-btn" data-tool="business" data-action="share" data-url="https://oportunidad.4millones.com/" style="margin-bottom: 10px; background: #25D366; border: none;">
-                                📱 Compartir vía WhatsApp
-                            </button>
-                            <button class="btn" id="business-open-btn" data-tool="business" data-action="open" data-url="https://oportunidad.4millones.com/">
-                                🔗 Abrir Presentación
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="tool-card placeholder-card">
-                        <div class="tool-card-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
-                                <path d="M9 7.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1zm-3 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1z"/>
-                            </svg>
-                            <h3>Agenda de Capacitación</h3>
-                            <p>Conéctate a los próximos talleres y capacitaciones de producto y negocio para acelerar tu crecimiento profesional.</p>
-                            <span class="coming-soon">Próximamente</span>
-                        </div>
-                    </div>
-
-                    <div class="tool-card placeholder-card">
-                        <div class="tool-card-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
-                            </svg>
-                            <h3>Recursos de Marketing</h3>
-                            <p>Descarga imágenes, fichas y material de apoyo listos para usar en tus redes sociales y potenciar tus ventas digitales.</p>
-                            <span class="coming-soon">Próximamente</span>
-                        </div>
-                    </div>
-
-                    <div class="tool-card placeholder-card">
-                        <div class="tool-card-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                                <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6zm0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
-                            </svg>
-                            <h3>Centro de Soporte</h3>
-                            <p>Accede a tutoriales, guías paso a paso y soporte técnico personalizado para maximizar el uso de todas las herramientas.</p>
-                            <span class="coming-soon">Próximamente</span>
-                        </div>
-                    </div>
-
-                    <div class="tool-card placeholder-card">
-                        <div class="tool-card-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2zm13 2.383-4.708 2.825L15 11.105V5.383zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741zM1 11.105l4.708-2.897L1 5.383v5.722z"/>
-                            </svg>
-                            <h3>Email Marketing</h3>
-                            <p>Herramientas de email marketing automatizado para nutrir leads y convertir prospectos en clientes activos.</p>
-                            <span class="coming-soon">Próximamente</span>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- Error state -->
-    <div id="error-content" class="error-container" style="display: none;">
-        <h2>Error de Autenticación</h2>
-        <p>No se pudo cargar el sistema de autenticación. Por favor, recarga la página.</p>
-        <button onclick="window.location.reload()" class="btn">Recargar Página</button>
-    </div>
-
-    <!-- Cargar Supabase desde CDN -->
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-    <!-- Script con optimización de loading -->
-    <script type="module">
-        // Imports corregidos
-        import {
-            initializeSupabase,
-            authGuard,
-            getUserProfile,
-            logoutUser
-        } from './assets/js/auth.js';
-
-        import {
-            showLoading,
-            showMainContent,
-            showError,
-            formatUserName,
-            showMessage,
-            clearMessage,
-            shareToolWithWhatsApp,
-            generatePersonalizedUrl,
-            getPersonalizedLinks,
-            logout,
-            TOOL_CONFIG,
-            initializeMobileHeaderControl
-        } from './assets/js/utils.js';
-
-        import { MESSAGES } from './assets/js/config.js';
-
-        // Variables globales
-        let currentUserProfile = null;
-        let isLoading = false;
-
-        console.log('🚀 Iniciando carga del portal...');
-
-        // 🚨 FIX: Función optimizada de mostrar contenido sin parpadeo
-        const showMainContentOptimized = () => {
-            showLoading(false);
-            const mainContent = document.getElementById('main-content');
-            const mobileHeader = document.getElementById('mobile-header');
-
-            if (mainContent) {
-                mainContent.style.display = 'block';
-                // Triggear animación suave
-                setTimeout(() => {
-                    mainContent.classList.add('fade-in');
-                }, 10);
-            }
-
-            // Mostrar header mobile gradualmente
-            if (mobileHeader && window.innerWidth <= 768) {
-                setTimeout(() => {
-                    mobileHeader.classList.add('show');
-                }, 200);
-            }
-        };
-
-        // 📱 FIX: Inicializar control de header mobile
-        initializeMobileHeaderControl();
-
-        // Verificar Supabase
-        if (typeof supabase === 'undefined') {
-            console.error('❌ Supabase no disponible');
-            showError(MESSAGES.authRequired);
+        if (profiles && profiles.length > 0) {
+            console.log(`✅ Encontrados ${profiles.length} perfiles en tabla profiles`);
+            usuarios = [...usuarios, ...profiles.map(p => ({
+                id: p.id,
+                nombre: p.full_name,
+                whatsapp: p.whatsapp || '',
+                email: p.email || '',
+                fuente: 'profiles'
+            }))];
         } else {
-            // Inicializar aplicación
-            try {
-                initializeSupabase();
-                console.log('✅ Supabase inicializado correctamente');
+            console.log('⚠️ No se encontraron datos en tabla profiles');
+        }
 
-                // Función para obtener iniciales
-                const getInitials = (name) => {
-                    if (!name) return 'U';
-                    const parts = name.trim().split(' ');
-                    if (parts.length >= 2) {
-                        return (parts[0][0] + parts[1][0]).toUpperCase();
-                    }
-                    return parts[0][0].toUpperCase();
-                };
+        // FUENTE 2: Si no hay datos en profiles, consultar auth.users via RPC
+        if (usuarios.length === 0) {
+            console.log('📋 Intentando consultar usuarios de auth...');
 
-                // Función para obtener nombre para display
-                const getDisplayName = (fullName) => {
-                    if (!fullName) return 'Usuario';
-                    const parts = fullName.trim().split(' ');
-                    if (parts.length >= 2) {
-                        return `${parts[0]} ${parts[1]}`;
-                    }
-                    return parts[0];
-                };
+            // Mapeo manual de usuarios conocidos (temporal)
+            const usuariosConocidos = [
+                {
+                    id: '5460d8d0-f3d4-4db0-99ca-48650a41ef57',
+                    nombre: 'Ganocafé Online',
+                    whatsapp: '+573118870682',
+                    email: 'admin@ganocafe.online',
+                    fuente: 'manual'
+                },
+                {
+                    id: '8e17b0bb-8029-4897-983f-57e53d5a0e64',
+                    nombre: 'Luis Cabrejo Parra',
+                    whatsapp: '+573203415438',
+                    email: 'luiscabrejo@gmail.com',
+                    fuente: 'manual'
+                }
+            ];
 
-                // Función principal
-                const loadPortal = async () => {
-                    try {
-                        console.log('🔐 Verificando autenticación...');
-                        const session = await authGuard(true);
-                        if (!session) return;
+            console.log(`📋 Usando mapeo manual: ${usuariosConocidos.length} usuarios`);
+            usuarios = [...usuarios, ...usuariosConocidos];
+        }
 
-                        console.log('👤 Obteniendo perfil del usuario...');
-                        const profile = await getUserProfile();
-                        if (!profile) {
-                            console.error('❌ No se pudo obtener el perfil');
-                            showError('Error al cargar perfil');
-                            return;
-                        }
+        console.log(`✅ Total de usuarios obtenidos: ${usuarios.length}`);
+        usuarios.forEach((u, i) => {
+            console.log(`   ${i+1}. ${u.nombre} (${u.fuente})`);
+        });
 
-                        // Validar y guardar perfil COMPLETO globalmente
-                        if (!profile.id) {
-                            console.error('❌ Perfil sin ID válido:', profile);
-                            showError('Error: Perfil de usuario incompleto');
-                            return;
-                        }
+        return usuarios;
 
-                        currentUserProfile = profile;
-                        console.log('✅ Perfil COMPLETO cargado:', {
-                            id: profile.id,
-                            email: profile.email,
-                            full_name: profile.full_name,
-                            whatsapp: profile.whatsapp
-                        });
+    } catch (error) {
+        console.error('❌ Error obteniendo usuarios:', error);
+        return [];
+    }
+}
 
-                        console.log('🎨 Personalizando interfaz del portal...');
+/**
+ * 🔍 Buscar distribuidor por slug (VERSIÓN HÍBRIDA MEJORADA)
+ * @param {string} slug - Slug del distribuidor (ej: "ganocafe-online")
+ * @returns {Object|null} Datos del distribuidor o null
+ */
+async function buscarDistribuidor(slug) {
+    try {
+        console.log('🔍 Buscando distribuidor con slug:', slug);
 
-                        // Formatear nombres
-                        const fullName = formatUserName(profile.full_name) ||
-                                       formatUserName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim()) ||
-                                       'Usuario';
+        // Obtener todos los usuarios disponibles
+        const usuarios = await obtenerTodosLosUsuarios();
 
-                        const displayName = getDisplayName(fullName);
-                        const initials = getInitials(fullName);
-                        const firstName = fullName.split(' ')[0];
+        if (usuarios.length === 0) {
+            console.warn('⚠️ No se encontraron usuarios en ninguna fuente');
+            return null;
+        }
 
-                        // Actualizar UI Desktop
-                        document.getElementById('user-name').textContent = fullName;
-                        document.getElementById('user-email').textContent = profile.email;
+        console.log(`📋 Comparando slug "${slug}" contra ${usuarios.length} usuarios...`);
 
-                        // Actualizar UI Mobile Premium
-                        document.getElementById('mobile-user-name-inline').textContent = displayName;
-                        document.getElementById('mobile-user-name-dropdown').textContent = fullName;
-                        document.getElementById('mobile-user-email-dropdown').textContent = profile.email;
+        // Buscar coincidencia exacta
+        let distribuidorEncontrado = null;
 
-                        // Actualizar avatares con iniciales
-                        document.getElementById('mobile-user-avatar').textContent = initials;
-                        document.getElementById('mobile-user-avatar-large').textContent = initials;
+        for (const usuario of usuarios) {
+            const slugGenerado = generarSlugDesdNombre(usuario.nombre);
 
-                        // Personalizar mensaje de bienvenida
-                        document.getElementById('welcome-text').textContent = `Bienvenido, ${firstName}`;
+            console.log(`🔍 "${usuario.nombre}" → "${slugGenerado}" vs "${slug}"`);
 
-                        // Configurar event listeners
-                        setupEventListeners();
-
-                        console.log('✅ Portal cargado exitosamente para:', fullName);
-
-                        // 🚨 FIX: Usar función optimizada sin parpadeo
-                        showMainContentOptimized();
-
-                    } catch (error) {
-                        console.error('❌ Error crítico al cargar portal:', error);
-                        showError('Error al cargar portal: ' + error.message);
-                    }
-                };
-
-                // Event listeners con debugging
-                const setupEventListeners = () => {
-                    // Desktop logout button
-                    const logoutBtn = document.getElementById('logout-btn');
-                    if (logoutBtn) {
-                        logoutBtn.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            if (confirm('¿Cerrar sesión?')) {
-                                logout();
-                            }
-                        });
-                    }
-
-                    // Mobile user area premium
-                    const mobileUserArea = document.getElementById('mobile-user-area');
-                    const mobileUserDropdown = document.getElementById('mobile-user-dropdown');
-                    const mobileMenuLogout = document.getElementById('mobile-menu-logout');
-                    const mobileMenuProfile = document.getElementById('mobile-menu-profile');
-
-                    if (mobileUserArea && mobileUserDropdown) {
-                        // Toggle dropdown premium
-                        mobileUserArea.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            mobileUserArea.classList.toggle('active');
-                            mobileUserDropdown.classList.toggle('show');
-                        });
-
-                        // Close dropdown cuando clic fuera
-                        document.addEventListener('click', () => {
-                            mobileUserArea.classList.remove('active');
-                            mobileUserDropdown.classList.remove('show');
-                        });
-
-                        // Prevenir cierre cuando clic dentro
-                        mobileUserDropdown.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                        });
-                    }
-
-                    // Mobile menu actions
-                    if (mobileMenuLogout) {
-                        mobileMenuLogout.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            mobileUserArea.classList.remove('active');
-                            mobileUserDropdown.classList.remove('show');
-                            if (confirm('¿Cerrar sesión?')) {
-                                logout();
-                            }
-                        });
-                    }
-
-                    if (mobileMenuProfile) {
-                        mobileMenuProfile.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            mobileUserArea.classList.remove('active');
-                            mobileUserDropdown.classList.remove('show');
-                            window.location.href = 'pages/profile.html';
-                        });
-                    }
-
-                    // Event listener para botones de herramientas
-                    document.addEventListener('click', async (event) => {
-                        const target = event.target;
-
-                        // Prevenir múltiples clics durante loading
-                        if (isLoading) {
-                            console.log('⏳ Acción en progreso, ignorando clic');
-                            return;
-                        }
-
-                        // Verificar si es un botón de herramienta
-                        if (target.dataset.action && target.dataset.tool) {
-                            event.preventDefault();
-
-                            const action = target.dataset.action;
-                            const toolType = target.dataset.tool;
-                            const toolUrl = target.dataset.url;
-
-                            // Validación exhaustiva del perfil
-                            if (!currentUserProfile || !currentUserProfile.id) {
-                                console.error('❌ currentUserProfile no válido:', currentUserProfile);
-                                showMessage('❌ Error: Perfil de usuario no disponible. Recarga la página.', 'error');
-                                return;
-                            }
-
-                            isLoading = true;
-                            const originalText = target.textContent;
-                            target.disabled = true;
-
-                            try {
-                                if (action === 'share') {
-                                    target.textContent = 'Generando enlace...';
-
-                                    if (!toolUrl) {
-                                        throw new Error('URL de herramienta no encontrada');
-                                    }
-
-                                    console.log(`📱 Iniciando compartir ${toolType} vía WhatsApp...`);
-                                    shareToolWithWhatsApp(toolType, currentUserProfile, toolUrl);
-
-                                } else if (action === 'open') {
-                                    target.textContent = 'Abriendo...';
-
-                                    if (!toolUrl) {
-                                        throw new Error('URL de herramienta no encontrada');
-                                    }
-
-                                    const personalizedUrl = generatePersonalizedUrl(toolUrl, currentUserProfile);
-
-                                    if (personalizedUrl && personalizedUrl !== '#') {
-                                        window.open(personalizedUrl, '_blank');
-                                        showMessage('✅ Abriendo herramienta', 'success');
-                                    } else {
-                                        throw new Error('No se pudo generar URL personalizada');
-                                    }
-                                }
-
-                            } catch (error) {
-                                console.error(`❌ Error en acción ${action}:`, error);
-                                showMessage(`❌ Error al ${action === 'share' ? 'compartir' : 'abrir'} herramienta: ${error.message}`, 'error');
-                            } finally {
-                                setTimeout(() => {
-                                    target.textContent = originalText;
-                                    target.disabled = false;
-                                    isLoading = false;
-                                }, 2000);
-                            }
-                        }
-                    });
-
-                    console.log('✅ Event listeners configurados correctamente');
-                };
-
-                // Inicializar aplicación
-                loadPortal();
-
-            } catch (error) {
-                console.error('❌ Error crítico de inicialización:', error);
-                showError('Error al inicializar aplicación: ' + error.message);
+            if (slugGenerado === slug) {
+                distribuidorEncontrado = usuario;
+                console.log('✅ ¡DISTRIBUIDOR ENCONTRADO!', {
+                    nombre: usuario.nombre,
+                    slug_buscado: slug,
+                    slug_generado: slugGenerado,
+                    whatsapp: usuario.whatsapp,
+                    fuente: usuario.fuente
+                });
+                break;
             }
         }
 
-        // Manejo de errores de red
-        window.addEventListener('online', () => {
-            showMessage('🌐 Conexión restaurada', 'success', 3000);
+        if (distribuidorEncontrado) {
+            // Formatear número de WhatsApp
+            let whatsappFormateado = distribuidorEncontrado.whatsapp;
+            if (whatsappFormateado && !whatsappFormateado.startsWith('+')) {
+                whatsappFormateado = '+57' + whatsappFormateado.replace(/[^\d]/g, '');
+            }
+
+            return {
+                nombre: distribuidorEncontrado.nombre,
+                whatsapp: whatsappFormateado,
+                email: distribuidorEncontrado.email,
+                slug: slug,
+                primer_nombre: distribuidorEncontrado.nombre.split(' ')[0],
+                fuente: distribuidorEncontrado.fuente
+            };
+        }
+
+        console.warn('⚠️ No se encontró distribuidor para el slug:', slug);
+        return null;
+
+    } catch (error) {
+        console.error('❌ Error en búsqueda de distribuidor:', error);
+        return null;
+    }
+}
+
+/**
+ * 🎨 Personalizar catálogo con datos del distribuidor (MEJORADO)
+ * @param {Object} distribuidor - Datos del distribuidor
+ */
+function personalizarCatalogo(distribuidor) {
+    try {
+        console.log('🎨 Personalizando catálogo para:', distribuidor.nombre);
+
+        // 1. Personalizar título de la página
+        document.title = `Catálogo de ${distribuidor.primer_nombre} - Gano Excel`;
+
+        // 2. Personalizar header principal
+        const headerTitle = document.querySelector('header h1');
+        if (headerTitle) {
+            headerTitle.textContent = `Catálogo de Bienestar de ${distribuidor.primer_nombre}`;
+        }
+
+        // 3. Personalizar subtítulo del header
+        const headerSubtitle = document.querySelector('header p');
+        if (headerSubtitle) {
+            headerSubtitle.textContent = `Descubre los productos Gano Excel recomendados por ${distribuidor.primer_nombre}`;
+        }
+
+        // 4. Personalizar mensaje de bienvenida
+        const welcomeSection = document.querySelector('.welcome-section');
+        if (welcomeSection) {
+            const welcomeTitle = welcomeSection.querySelector('h2');
+            const welcomeText = welcomeSection.querySelector('p');
+
+            if (welcomeTitle) {
+                welcomeTitle.textContent = `Bienvenido al catálogo de ${distribuidor.primer_nombre}`;
+            }
+
+            if (welcomeText) {
+                welcomeText.innerHTML = `
+                    <strong>${distribuidor.primer_nombre}</strong> te invita a explorar estos productos diseñados para nutrir tu cuerpo y mejorar tu día a día.
+                    Cada uno combina lo mejor de la naturaleza con innovación científica.
+                    <br><br>
+                    <strong>💬 Para más información, precios o realizar un pedido, contacta directamente a ${distribuidor.primer_nombre} usando el botón de WhatsApp.</strong>
+                `;
+            }
+        }
+
+        // 5. Configurar botón de WhatsApp personalizado
+        configurarWhatsAppPersonalizado(distribuidor);
+
+        // 6. Agregar badge de distribuidor
+        agregarBadgeDistribuidor(distribuidor);
+
+        console.log('✅ Catálogo personalizado exitosamente para:', distribuidor.nombre);
+
+    } catch (error) {
+        console.error('❌ Error personalizando catálogo:', error);
+    }
+}
+
+/**
+ * 📱 Configurar botón de WhatsApp personalizado del distribuidor
+ * @param {Object} distribuidor - Datos del distribuidor
+ */
+function configurarWhatsAppPersonalizado(distribuidor) {
+    try {
+        const whatsappButton = document.getElementById('whatsapp-button');
+
+        if (whatsappButton && distribuidor.whatsapp) {
+            // Mensaje personalizado con el nombre del distribuidor
+            const mensaje = `Hola ${distribuidor.primer_nombre}, vi tu catálogo de productos Gano Excel y me interesan. ¿Me podrías dar más información sobre precios y disponibilidad?`;
+
+            // URL de WhatsApp con número del distribuidor
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${distribuidor.whatsapp}&text=${encodeURIComponent(mensaje)}`;
+
+            whatsappButton.href = whatsappUrl;
+            whatsappButton.style.display = 'flex';
+            whatsappButton.title = `Contactar a ${distribuidor.primer_nombre} por WhatsApp`;
+
+            console.log('📱 WhatsApp configurado para:', {
+                nombre: distribuidor.primer_nombre,
+                whatsapp: distribuidor.whatsapp,
+                mensaje_preview: mensaje.substring(0, 50) + '...',
+                fuente: distribuidor.fuente
+            });
+        } else {
+            console.warn('⚠️ No se pudo configurar WhatsApp:', {
+                button_exists: !!whatsappButton,
+                has_whatsapp: !!distribuidor.whatsapp
+            });
+        }
+
+    } catch (error) {
+        console.error('❌ Error configurando WhatsApp personalizado:', error);
+    }
+}
+
+/**
+ * 🏷️ Agregar badge de distribuidor para mayor confianza
+ * @param {Object} distribuidor - Datos del distribuidor
+ */
+function agregarBadgeDistribuidor(distribuidor) {
+    try {
+        const header = document.querySelector('header');
+        if (header && !header.querySelector('.distributor-badge')) {
+            // Crear badge de distribuidor
+            const badge = document.createElement('div');
+            badge.className = 'distributor-badge';
+            badge.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #25D366, #128C7E);
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    margin: 10px auto;
+                    display: inline-block;
+                    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+                ">
+                    📱 Catálogo compartido por ${distribuidor.primer_nombre}
+                </div>
+            `;
+
+            header.appendChild(badge);
+            console.log('🏷️ Badge de distribuidor agregado');
+        }
+    } catch (error) {
+        console.error('❌ Error agregando badge:', error);
+    }
+}
+
+/**
+ * 🔄 Configurar fallback si no hay distribuidor específico
+ */
+function configurarFallback() {
+    try {
+        console.log('🔄 Configurando fallback (distribuidor por defecto)');
+
+        const whatsappButton = document.getElementById('whatsapp-button');
+
+        if (whatsappButton) {
+            // Número por defecto de Ganocafé Online
+            const numeroDefecto = '+573118870682';
+            const mensajeDefecto = 'Hola, vi el catálogo de productos Gano Excel y me interesan. ¿Me podrías dar más información sobre precios y disponibilidad?';
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${numeroDefecto}&text=${encodeURIComponent(mensajeDefecto)}`;
+
+            whatsappButton.href = whatsappUrl;
+            whatsappButton.style.display = 'flex';
+            whatsappButton.title = 'Contactar por WhatsApp';
+
+            console.log('📱 WhatsApp configurado con número por defecto:', numeroDefecto);
+        }
+
+        // Mantener título original
+        document.title = 'Catálogo de Bienestar - Gano Excel';
+
+    } catch (error) {
+        console.error('❌ Error configurando fallback:', error);
+    }
+}
+
+/**
+ * 🚀 Función principal: Inicializar sistema de distribuidores
+ */
+async function inicializarDistribuidor() {
+    try {
+        console.log('🚀 =================================');
+        console.log('🎯 INICIALIZANDO SISTEMA DE DISTRIBUIDORES HÍBRIDO');
+        console.log('🚀 =================================');
+
+        // Leer parámetros de URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const distribuidorSlug = urlParams.get('distribuidor');
+        const socioId = urlParams.get('socio'); // Fallback para compatibilidad
+
+        console.log('📋 Parámetros detectados:', {
+            distribuidor: distribuidorSlug,
+            socio: socioId,
+            url_completa: window.location.href
         });
 
-        window.addEventListener('offline', () => {
-            showMessage('📡 Sin conexión a internet', 'error', 5000);
-        });
+        if (distribuidorSlug) {
+            console.log('🔍 Buscando distribuidor con slug:', distribuidorSlug);
 
-        // Manejar orientación en móvil
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                window.scrollTo(0, 0);
-            }, 100);
-        });
-    </script>
-</body>
-</html>
+            // Buscar distribuidor específico por slug
+            const distribuidor = await buscarDistribuidor(distribuidorSlug);
+
+            if (distribuidor) {
+                console.log('✅ DISTRIBUIDOR ENCONTRADO - Personalizando catálogo...');
+                console.log('📊 Datos del distribuidor:', distribuidor);
+                personalizarCatalogo(distribuidor);
+
+                // Mostrar confirmación visual en la página
+                setTimeout(() => {
+                    console.log('🎉 CATÁLOGO PERSONALIZADO EXITOSAMENTE');
+                    console.log(`📱 WhatsApp configurado para: ${distribuidor.primer_nombre}`);
+                    console.log(`🔗 Número: ${distribuidor.whatsapp}`);
+                }, 1000);
+
+            } else {
+                console.warn('⚠️ Distribuidor no encontrado para slug:', distribuidorSlug);
+                console.log('🔄 Aplicando configuración por defecto...');
+                configurarFallback();
+            }
+
+        } else if (socioId) {
+            console.log('📝 Parámetro socio detectado (compatibilidad), usando fallback');
+            configurarFallback();
+
+        } else {
+            console.log('📝 Sin parámetros de distribuidor, usando configuración por defecto');
+            configurarFallback();
+        }
+
+        console.log('🚀 =================================');
+        console.log('✅ INICIALIZACIÓN COMPLETADA');
+        console.log('🚀 =================================');
+
+    } catch (error) {
+        console.error('❌ Error crítico inicializando distribuidor:', error);
+        console.log('🔄 Aplicando fallback por error...');
+        configurarFallback();
+    }
+}
+
+/**
+ * 🎬 Ejecutar cuando el DOM y Supabase estén listos
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🎬 DOM cargado, verificando dependencias...');
+
+    // Verificar que Supabase esté disponible
+    if (typeof window.supabase === 'undefined') {
+        console.error('❌ Supabase no está disponible en el catálogo');
+        console.log('🔄 Aplicando fallback por falta de Supabase...');
+        setTimeout(configurarFallback, 1000);
+        return;
+    }
+
+    console.log('✅ Supabase disponible, inicializando sistema...');
+
+    // Pequeño delay para asegurar que todo esté cargado
+    setTimeout(() => {
+        inicializarDistribuidor();
+    }, 500);
+});
+
+// Mensaje de confirmación de carga
+console.log('🎯 ===================================');
+console.log('✅ SISTEMA DE DISTRIBUIDORES HÍBRIDO CARGADO');
+console.log('🎯 ===================================');
