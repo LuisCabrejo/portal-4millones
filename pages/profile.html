@@ -14,6 +14,51 @@
     <link rel="stylesheet" href="../assets/css/components.css">
 
     <style>
+        /* 🚨 FIX: Prevenir pantalla blanca con estilos de emergencia */
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+        }
+
+        #main-content {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            min-height: 100vh;
+            background: #f8fafc;
+        }
+
+        #main-content.show {
+            opacity: 1;
+        }
+
+        #error-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
         /* Estilos para botones de compartir */
         .share-button {
             background: #25D366;
@@ -71,10 +116,11 @@
     </style>
 </head>
 <body>
-    <!-- Loading state -->
+    <!-- Loading state mejorado -->
     <div id="loading" class="loading-container">
         <div class="loading-spinner large"></div>
         <p>Cargando perfil...</p>
+        <small id="loading-status">Inicializando...</small>
     </div>
 
     <!-- Main content (hidden initially) -->
@@ -247,46 +293,93 @@
         </div>
     </div>
 
-    <!-- Error state -->
+    <!-- Error state mejorado -->
     <div id="error-content" class="error-container" style="display: none;">
         <h2>Error de Autenticación</h2>
-        <p>No se pudo cargar tu perfil. Por favor, inicia sesión nuevamente.</p>
+        <p id="error-message">No se pudo cargar tu perfil. Por favor, inicia sesión nuevamente.</p>
         <button onclick="window.location.href='../auth/login.html'" class="btn">Ir al Login</button>
+        <br><br>
+        <button onclick="window.location.reload()" class="btn" style="background: #6c757d;">Recargar Página</button>
     </div>
 
     <!-- Cargar Supabase desde CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-    <!-- Scripts modulares -->
+    <!-- Scripts modulares con manejo robusto de errores -->
     <script type="module">
-        import {
-            initializeSupabase,
-            authGuard,
-            getUserProfile,
-            updateUserProfile,
-            logoutUser
-        } from '../assets/js/auth.js';
+        // 🚨 FIX: Función para actualizar estado de loading
+        const updateLoadingStatus = (message) => {
+            const statusEl = document.getElementById('loading-status');
+            if (statusEl) {
+                statusEl.textContent = message;
+            }
+            console.log('📋 Status:', message);
+        };
 
-        import {
-            showMessage,
-            clearMessage,
-            updateButton,
-            validateWhatsApp,
-            validateURL,
-            showLoading,
-            showMainContent,
-            showError,
-            formatUserName,
-            formatWhatsApp,
-            validateField,
-            getPersonalizedLinks,
-            generateWhatsAppShareUrl
-        } from '../assets/js/utils.js';
+        // 🚨 FIX: Función para mostrar contenido principal sin errores
+        const showMainContentSafe = () => {
+            try {
+                const loading = document.getElementById('loading');
+                const mainContent = document.getElementById('main-content');
+                const errorContent = document.getElementById('error-content');
 
-        import { MESSAGES } from '../assets/js/config.js';
+                console.log('📋 Elementos encontrados:', {
+                    loading: !!loading,
+                    mainContent: !!mainContent,
+                    errorContent: !!errorContent
+                });
 
-        // Variable global para el perfil
-        let currentUserProfile = null;
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+
+                if (errorContent) {
+                    errorContent.style.display = 'none';
+                }
+
+                if (mainContent) {
+                    mainContent.style.display = 'block';
+                    // Triggear animación después de un delay
+                    setTimeout(() => {
+                        mainContent.classList.add('show');
+                    }, 100);
+                }
+
+                console.log('✅ Contenido principal mostrado');
+            } catch (error) {
+                console.error('❌ Error al mostrar contenido:', error);
+            }
+        };
+
+        // 🚨 FIX: Función para mostrar error sin problemas
+        const showErrorSafe = (message = 'Error al cargar el perfil') => {
+            try {
+                const loading = document.getElementById('loading');
+                const mainContent = document.getElementById('main-content');
+                const errorContent = document.getElementById('error-content');
+                const errorMessage = document.getElementById('error-message');
+
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+
+                if (mainContent) {
+                    mainContent.style.display = 'none';
+                }
+
+                if (errorContent) {
+                    errorContent.style.display = 'flex';
+                }
+
+                if (errorMessage) {
+                    errorMessage.textContent = message;
+                }
+
+                console.log('🚨 Error mostrado:', message);
+            } catch (error) {
+                console.error('❌ Error al mostrar error:', error);
+            }
+        };
 
         // 📋 Función para copiar al portapapeles
         window.copyToClipboard = async (elementId) => {
@@ -294,300 +387,384 @@
             const text = element.textContent.trim();
 
             if (!text || text === 'No configurado') {
-                showMessage('⚠️ No hay contenido para copiar', 'error');
+                alert('⚠️ No hay contenido para copiar');
                 return;
             }
 
             try {
                 await navigator.clipboard.writeText(text);
-                showMessage('✅ Enlace copiado al portapapeles', 'success');
+                alert('✅ Enlace copiado al portapapeles');
             } catch (err) {
                 console.error('Error al copiar:', err);
-                // Fallback para navegadores sin soporte de clipboard API
+                // Fallback
                 const textArea = document.createElement('textarea');
                 textArea.value = text;
                 document.body.appendChild(textArea);
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                showMessage('✅ Enlace copiado al portapapeles', 'success');
+                alert('✅ Enlace copiado al portapapeles');
             }
         };
 
-        // 📱 Función para compartir enlace por WhatsApp
-        const shareViaWhatsApp = (linkType, linkUrl) => {
-            if (!linkUrl || linkUrl === 'No configurado') {
-                showMessage('⚠️ No hay enlace para compartir', 'error');
-                return;
-            }
+        // Inicialización con manejo robusto de errores
+        updateLoadingStatus('Verificando disponibilidad...');
 
-            let message = '';
-            switch (linkType) {
-                case 'catalog':
-                    message = '¡Hola! Te comparto nuestro catálogo completo de productos Gano Excel: ';
-                    break;
-                case 'business':
-                    message = '¡Hola! Te comparto información sobre la oportunidad de negocio con Gano Excel: ';
-                    break;
-                case 'affiliate':
-                    message = '¡Hola! Te comparto mi enlace de afiliación de Gano Excel: ';
-                    break;
-                default:
-                    message = '¡Hola! Te comparto este enlace: ';
-            }
-
-            const whatsappUrl = generateWhatsAppShareUrl(message, linkUrl);
-            if (whatsappUrl !== '#') {
-                window.open(whatsappUrl, '_blank');
-                showMessage('✅ Abriendo WhatsApp para compartir', 'success');
-            } else {
-                showMessage('❌ Error al generar enlace de WhatsApp', 'error');
-            }
-        };
-
-        // Verificar que Supabase esté cargado e inicializar
+        // 🚨 FIX: Verificar que Supabase esté cargado antes de continuar
         if (typeof supabase === 'undefined') {
-            console.error('Supabase no se pudo cargar');
-            showError(MESSAGES.authRequired);
+            console.error('❌ Supabase no se pudo cargar');
+            updateLoadingStatus('Error: Supabase no disponible');
+            setTimeout(() => {
+                showErrorSafe('Error al cargar el sistema de autenticación. Verifica tu conexión a internet.');
+            }, 2000);
         } else {
+            updateLoadingStatus('Cargando módulos...');
+
             try {
-                initializeSupabase();
+                // Importar funciones con manejo de errores
+                Promise.all([
+                    import('../assets/js/auth.js').catch(err => {
+                        console.error('❌ Error al cargar auth.js:', err);
+                        throw new Error('No se pudo cargar el módulo de autenticación');
+                    }),
+                    import('../assets/js/utils.js').catch(err => {
+                        console.error('❌ Error al cargar utils.js:', err);
+                        throw new Error('No se pudo cargar el módulo de utilidades');
+                    }),
+                    import('../assets/js/config.js').catch(err => {
+                        console.error('❌ Error al cargar config.js:', err);
+                        throw new Error('No se pudo cargar el módulo de configuración');
+                    })
+                ]).then(([authModule, utilsModule, configModule]) => {
 
-                // Referencias a elementos del DOM
-                const profileForm = document.getElementById('profile-form');
-                const submitBtn = document.getElementById('submit-btn');
-                const logoutBtn = document.getElementById('logout-btn');
+                    updateLoadingStatus('Módulos cargados, inicializando...');
 
-                // Campos del formulario
-                const fullNameInput = document.getElementById('full_name');
-                const emailInput = document.getElementById('email');
-                const whatsappInput = document.getElementById('whatsapp');
-                const affiliateLinkInput = document.getElementById('affiliate_link');
+                    // Extraer funciones
+                    const {
+                        initializeSupabase,
+                        authGuard,
+                        getUserProfile,
+                        updateUserProfile,
+                        logoutUser
+                    } = authModule;
 
-                // Elementos de información del usuario
-                const userNameEl = document.getElementById('user-name');
-                const userEmailEl = document.getElementById('user-email');
-                const profileAvatarEl = document.getElementById('profile-avatar');
-                const profileTitleEl = document.getElementById('profile-title');
+                    const {
+                        showMessage,
+                        clearMessage,
+                        updateButton,
+                        validateWhatsApp,
+                        validateURL,
+                        formatUserName,
+                        formatWhatsApp,
+                        validateField,
+                        getPersonalizedLinks,
+                        generateWhatsAppShareUrl
+                    } = utilsModule;
 
-                // Enlaces personalizados
-                const catalogLinkEl = document.getElementById('catalog-link');
-                const businessLinkEl = document.getElementById('business-link');
-                const affiliateDisplayEl = document.getElementById('affiliate-display');
-                const copyAffiliateBtnEl = document.getElementById('copy-affiliate-btn');
-                const shareAffiliateBtnEl = document.getElementById('share-affiliate-btn');
+                    const { MESSAGES } = configModule;
 
-                // Botones de compartir
-                const shareCatalogBtn = document.getElementById('share-catalog-btn');
-                const shareBusinessBtn = document.getElementById('share-business-btn');
+                    // Variable global para el perfil
+                    let currentUserProfile = null;
 
-                // Función para actualizar la visualización del enlace de afiliación
-                const updateAffiliateDisplay = (affiliateLink) => {
-                    if (affiliateLink && affiliateLink.trim()) {
-                        affiliateDisplayEl.textContent = affiliateLink;
-                        affiliateDisplayEl.style.color = '#1a202c';
-                        copyAffiliateBtnEl.style.display = 'inline-flex';
-                        shareAffiliateBtnEl.style.display = 'inline-flex';
+                    updateLoadingStatus('Inicializando Supabase...');
 
-                        // Agregar event listener para compartir
-                        shareAffiliateBtnEl.onclick = () => shareViaWhatsApp('affiliate', affiliateLink);
-                    } else {
-                        affiliateDisplayEl.textContent = 'No configurado';
-                        affiliateDisplayEl.style.color = '#718096';
-                        copyAffiliateBtnEl.style.display = 'none';
-                        shareAffiliateBtnEl.style.display = 'none';
-                    }
-                };
+                    // Inicializar Supabase
+                    initializeSupabase();
+                    console.log('✅ Supabase inicializado');
 
-                // Función para cargar datos del perfil
-                const loadProfile = async () => {
-                    try {
-                        showLoading(true);
-
-                        const profile = await getUserProfile();
-                        if (!profile) {
-                            showError('No se pudo cargar el perfil');
+                    // 📱 Función para compartir enlace por WhatsApp
+                    const shareViaWhatsApp = (linkType, linkUrl) => {
+                        if (!linkUrl || linkUrl === 'No configurado') {
+                            alert('⚠️ No hay enlace para compartir');
                             return;
                         }
 
-                        currentUserProfile = profile;
-                        console.log('📋 Perfil COMPLETO cargado en profile.html:', profile);
-
-                        // Actualizar información en sidebar
-                        const displayName = formatUserName(profile.full_name) || 'Usuario';
-                        userNameEl.textContent = displayName;
-                        userEmailEl.textContent = profile.email;
-
-                        // Actualizar avatar con iniciales
-                        const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
-                        profileAvatarEl.textContent = initials;
-
-                        // Actualizar título del perfil
-                        profileTitleEl.textContent = `Perfil de ${displayName}`;
-
-                        // Llenar formulario
-                        fullNameInput.value = profile.full_name || '';
-                        emailInput.value = profile.email || '';
-                        whatsappInput.value = profile.whatsapp || '';
-                        affiliateLinkInput.value = profile.affiliate_link || '';
-
-                        // Generar enlaces personalizados
-                        console.log('🔗 Generando enlaces personalizados para:', profile);
-                        const personalizedLinks = getPersonalizedLinks(profile);
-                        console.log('✅ Enlaces personalizados generados:', personalizedLinks);
-
-                        catalogLinkEl.textContent = personalizedLinks.catalog;
-                        businessLinkEl.textContent = personalizedLinks.business;
-
-                        // Actualizar visualización del enlace de afiliación
-                        updateAffiliateDisplay(profile.affiliate_link);
-
-                        // Configurar event listeners para compartir herramientas
-                        shareCatalogBtn.onclick = () => shareViaWhatsApp('catalog', personalizedLinks.catalog);
-                        shareBusinessBtn.onclick = () => shareViaWhatsApp('business', personalizedLinks.business);
-
-                        showMainContent();
-
-                    } catch (error) {
-                        console.error('Error al cargar perfil:', error);
-                        showError('Error al cargar el perfil');
-                    }
-                };
-
-                // Validación en tiempo real para WhatsApp
-                whatsappInput.addEventListener('input', () => {
-                    const whatsapp = whatsappInput.value;
-                    if (whatsapp.length > 0) {
-                        const isValid = validateWhatsApp(whatsapp);
-                        validateField(
-                            whatsappInput,
-                            'whatsapp-validation',
-                            isValid,
-                            '✓ Número válido',
-                            'Formato inválido (ej: +57 300 123 4567)'
-                        );
-                    } else {
-                        whatsappInput.classList.remove('valid', 'invalid');
-                        document.getElementById('whatsapp-validation').innerHTML = '<small>Este número se usará para que los clientes te contacten directamente</small>';
-                    }
-                });
-
-                // Validación en tiempo real para enlace de afiliación
-                affiliateLinkInput.addEventListener('input', () => {
-                    const url = affiliateLinkInput.value;
-                    if (url.length > 0) {
-                        const isValid = validateURL(url);
-                        validateField(
-                            affiliateLinkInput,
-                            'affiliate-validation',
-                            isValid,
-                            '✓ URL válida',
-                            'URL inválida (ej: https://tu-enlace-gano.com)'
-                        );
-
-                        // Actualizar preview en tiempo real
-                        if (isValid) {
-                            updateAffiliateDisplay(url);
+                        let message = '';
+                        switch (linkType) {
+                            case 'catalog':
+                                message = '¡Hola! Te comparto nuestro catálogo completo de productos Gano Excel: ';
+                                break;
+                            case 'business':
+                                message = '¡Hola! Te comparto información sobre la oportunidad de negocio con Gano Excel: ';
+                                break;
+                            case 'affiliate':
+                                message = '¡Hola! Te comparto mi enlace de afiliación de Gano Excel: ';
+                                break;
+                            default:
+                                message = '¡Hola! Te comparto este enlace: ';
                         }
-                    } else {
-                        affiliateLinkInput.classList.remove('valid', 'invalid');
-                        document.getElementById('affiliate-validation').innerHTML = '<small>Tu enlace personalizado de Gano Excel para referencias</small>';
-                        updateAffiliateDisplay('');
-                    }
-                });
 
-                // Formatear WhatsApp al salir del campo
-                whatsappInput.addEventListener('blur', () => {
-                    if (whatsappInput.value.trim()) {
-                        whatsappInput.value = formatWhatsApp(whatsappInput.value);
-                    }
-                });
+                        const whatsappUrl = generateWhatsAppShareUrl(message, linkUrl);
+                        if (whatsappUrl !== '#') {
+                            window.open(whatsappUrl, '_blank');
+                            showMessage('✅ Abriendo WhatsApp para compartir', 'success');
+                        } else {
+                            showMessage('❌ Error al generar enlace de WhatsApp', 'error');
+                        }
+                    };
 
-                // Manejar logout
-                logoutBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-                        logoutUser();
-                    }
-                });
+                    // Referencias a elementos del DOM
+                    const profileForm = document.getElementById('profile-form');
+                    const submitBtn = document.getElementById('submit-btn');
+                    const logoutBtn = document.getElementById('logout-btn');
 
-                // Manejar envío del formulario
-                profileForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
+                    // Campos del formulario
+                    const fullNameInput = document.getElementById('full_name');
+                    const emailInput = document.getElementById('email');
+                    const whatsappInput = document.getElementById('whatsapp');
+                    const affiliateLinkInput = document.getElementById('affiliate_link');
 
-                    clearMessage();
-                    updateButton(submitBtn, true, 'Guardando...');
+                    // Elementos de información del usuario
+                    const userNameEl = document.getElementById('user-name');
+                    const userEmailEl = document.getElementById('user-email');
+                    const profileAvatarEl = document.getElementById('profile-avatar');
+                    const profileTitleEl = document.getElementById('profile-title');
 
-                    // Obtener datos del formulario
-                    const whatsapp = whatsappInput.value.trim();
-                    const affiliateLink = affiliateLinkInput.value.trim();
+                    // Enlaces personalizados
+                    const catalogLinkEl = document.getElementById('catalog-link');
+                    const businessLinkEl = document.getElementById('business-link');
+                    const affiliateDisplayEl = document.getElementById('affiliate-display');
+                    const copyAffiliateBtnEl = document.getElementById('copy-affiliate-btn');
+                    const shareAffiliateBtnEl = document.getElementById('share-affiliate-btn');
 
-                    // Validar datos
-                    if (whatsapp && !validateWhatsApp(whatsapp)) {
-                        showMessage('Por favor, ingresa un número de WhatsApp válido', 'error');
-                        updateButton(submitBtn, false, 'Guardar Cambios');
-                        return;
-                    }
+                    // Botones de compartir
+                    const shareCatalogBtn = document.getElementById('share-catalog-btn');
+                    const shareBusinessBtn = document.getElementById('share-business-btn');
 
-                    if (affiliateLink && !validateURL(affiliateLink)) {
-                        showMessage('Por favor, ingresa una URL válida para tu enlace de afiliación', 'error');
-                        updateButton(submitBtn, false, 'Guardar Cambios');
-                        return;
-                    }
+                    // Función para actualizar la visualización del enlace de afiliación
+                    const updateAffiliateDisplay = (affiliateLink) => {
+                        if (affiliateLink && affiliateLink.trim()) {
+                            affiliateDisplayEl.textContent = affiliateLink;
+                            affiliateDisplayEl.style.color = '#1a202c';
+                            copyAffiliateBtnEl.style.display = 'inline-flex';
+                            shareAffiliateBtnEl.style.display = 'inline-flex';
 
-                    try {
-                        // Actualizar perfil
-                        const updatedProfile = await updateUserProfile({
-                            full_name: fullNameInput.value.trim(),
-                            whatsapp: formatWhatsApp(whatsapp),
-                            affiliate_link: affiliateLink
-                        });
+                            // Agregar event listener para compartir
+                            shareAffiliateBtnEl.onclick = () => shareViaWhatsApp('affiliate', affiliateLink);
+                        } else {
+                            affiliateDisplayEl.textContent = 'No configurado';
+                            affiliateDisplayEl.style.color = '#718096';
+                            copyAffiliateBtnEl.style.display = 'none';
+                            shareAffiliateBtnEl.style.display = 'none';
+                        }
+                    };
 
-                        showMessage(MESSAGES.profileUpdated, 'success');
+                    // Función principal para cargar datos del perfil
+                    const loadProfile = async () => {
+                        try {
+                            updateLoadingStatus('Verificando autenticación...');
 
-                        // Actualizar nombre en la UI si cambió
-                        const displayName = formatUserName(fullNameInput.value.trim());
-                        userNameEl.textContent = displayName;
-                        profileTitleEl.textContent = `Perfil de ${displayName}`;
+                            const session = await authGuard(false);
+                            if (!session) {
+                                updateLoadingStatus('Redirigiendo al login...');
+                                setTimeout(() => {
+                                    window.location.href = '../auth/login.html';
+                                }, 1000);
+                                return;
+                            }
 
-                        const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
-                        profileAvatarEl.textContent = initials;
+                            updateLoadingStatus('Obteniendo perfil...');
 
-                        // Actualizar perfil global
-                        if (updatedProfile) {
-                            currentUserProfile = updatedProfile;
+                            const profile = await getUserProfile();
+                            if (!profile) {
+                                throw new Error('No se pudo cargar el perfil del usuario');
+                            }
 
-                            // Actualizar enlaces personalizados
-                            const personalizedLinks = getPersonalizedLinks(updatedProfile);
+                            currentUserProfile = profile;
+                            console.log('📋 Perfil COMPLETO cargado:', profile);
+
+                            updateLoadingStatus('Personalizando interfaz...');
+
+                            // Actualizar información en sidebar
+                            const displayName = formatUserName(profile.full_name) || 'Usuario';
+                            userNameEl.textContent = displayName;
+                            userEmailEl.textContent = profile.email;
+
+                            // Actualizar avatar con iniciales
+                            const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
+                            profileAvatarEl.textContent = initials;
+
+                            // Actualizar título del perfil
+                            profileTitleEl.textContent = `Perfil de ${displayName}`;
+
+                            // Llenar formulario
+                            fullNameInput.value = profile.full_name || '';
+                            emailInput.value = profile.email || '';
+                            whatsappInput.value = profile.whatsapp || '';
+                            affiliateLinkInput.value = profile.affiliate_link || '';
+
+                            // Generar enlaces personalizados
+                            console.log('🔗 Generando enlaces personalizados...');
+                            const personalizedLinks = getPersonalizedLinks(profile);
+                            console.log('✅ Enlaces generados:', personalizedLinks);
+
                             catalogLinkEl.textContent = personalizedLinks.catalog;
                             businessLinkEl.textContent = personalizedLinks.business;
 
-                            // Actualizar enlace de afiliación
-                            updateAffiliateDisplay(updatedProfile.affiliate_link);
+                            // Actualizar visualización del enlace de afiliación
+                            updateAffiliateDisplay(profile.affiliate_link);
+
+                            // Configurar event listeners para compartir herramientas
+                            shareCatalogBtn.onclick = () => shareViaWhatsApp('catalog', personalizedLinks.catalog);
+                            shareBusinessBtn.onclick = () => shareViaWhatsApp('business', personalizedLinks.business);
+
+                            updateLoadingStatus('Configurando eventos...');
+
+                            // Configurar event listeners
+                            setupEventListeners();
+
+                            updateLoadingStatus('¡Listo!');
+
+                            // Mostrar contenido principal
+                            setTimeout(() => {
+                                showMainContentSafe();
+                            }, 500);
+
+                        } catch (error) {
+                            console.error('❌ Error al cargar perfil:', error);
+                            updateLoadingStatus('Error al cargar perfil');
+                            setTimeout(() => {
+                                showErrorSafe(error.message || 'Error al cargar el perfil');
+                            }, 1000);
+                        }
+                    };
+
+                    // Configurar event listeners
+                    const setupEventListeners = () => {
+                        // Validación en tiempo real para WhatsApp
+                        if (whatsappInput) {
+                            whatsappInput.addEventListener('input', () => {
+                                const whatsapp = whatsappInput.value;
+                                if (whatsapp.length > 0) {
+                                    const isValid = validateWhatsApp(whatsapp);
+                                    validateField(
+                                        whatsappInput,
+                                        'whatsapp-validation',
+                                        isValid,
+                                        '✓ Número válido',
+                                        'Formato inválido (ej: +57 300 123 4567)'
+                                    );
+                                }
+                            });
+
+                            whatsappInput.addEventListener('blur', () => {
+                                if (whatsappInput.value.trim()) {
+                                    whatsappInput.value = formatWhatsApp(whatsappInput.value);
+                                }
+                            });
                         }
 
-                    } catch (error) {
-                        console.error('Error al actualizar perfil:', error);
-                        showMessage('Error al actualizar el perfil. Intenta de nuevo.', 'error');
-                    } finally {
-                        updateButton(submitBtn, false, 'Guardar Cambios');
-                    }
+                        // Validación para enlace de afiliación
+                        if (affiliateLinkInput) {
+                            affiliateLinkInput.addEventListener('input', () => {
+                                const url = affiliateLinkInput.value;
+                                if (url.length > 0) {
+                                    const isValid = validateURL(url);
+                                    validateField(
+                                        affiliateLinkInput,
+                                        'affiliate-validation',
+                                        isValid,
+                                        '✓ URL válida',
+                                        'URL inválida (ej: https://tu-enlace-gano.com)'
+                                    );
+
+                                    // Actualizar preview en tiempo real
+                                    if (isValid) {
+                                        updateAffiliateDisplay(url);
+                                    }
+                                } else {
+                                    updateAffiliateDisplay('');
+                                }
+                            });
+                        }
+
+                        // Logout
+                        if (logoutBtn) {
+                            logoutBtn.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                                    logoutUser();
+                                }
+                            });
+                        }
+
+                        // Envío del formulario
+                        if (profileForm) {
+                            profileForm.addEventListener('submit', async (event) => {
+                                event.preventDefault();
+
+                                clearMessage();
+                                updateButton(submitBtn, true, 'Guardando...');
+
+                                try {
+                                    const whatsapp = whatsappInput.value.trim();
+                                    const affiliateLink = affiliateLinkInput.value.trim();
+
+                                    // Validar datos
+                                    if (whatsapp && !validateWhatsApp(whatsapp)) {
+                                        throw new Error('Por favor, ingresa un número de WhatsApp válido');
+                                    }
+
+                                    if (affiliateLink && !validateURL(affiliateLink)) {
+                                        throw new Error('Por favor, ingresa una URL válida para tu enlace de afiliación');
+                                    }
+
+                                    // Actualizar perfil
+                                    const updatedProfile = await updateUserProfile({
+                                        full_name: fullNameInput.value.trim(),
+                                        whatsapp: formatWhatsApp(whatsapp),
+                                        affiliate_link: affiliateLink
+                                    });
+
+                                    showMessage(MESSAGES.profileUpdated, 'success');
+
+                                    // Actualizar UI
+                                    const displayName = formatUserName(fullNameInput.value.trim());
+                                    userNameEl.textContent = displayName;
+                                    profileTitleEl.textContent = `Perfil de ${displayName}`;
+
+                                    // Actualizar perfil global
+                                    if (updatedProfile) {
+                                        currentUserProfile = updatedProfile;
+
+                                        // Actualizar enlaces personalizados
+                                        const personalizedLinks = getPersonalizedLinks(updatedProfile);
+                                        catalogLinkEl.textContent = personalizedLinks.catalog;
+                                        businessLinkEl.textContent = personalizedLinks.business;
+
+                                        // Actualizar enlace de afiliación
+                                        updateAffiliateDisplay(updatedProfile.affiliate_link);
+                                    }
+
+                                } catch (error) {
+                                    console.error('Error al actualizar perfil:', error);
+                                    showMessage('Error al actualizar el perfil: ' + error.message, 'error');
+                                } finally {
+                                    updateButton(submitBtn, false, 'Guardar Cambios');
+                                }
+                            });
+                        }
+
+                        console.log('✅ Event listeners configurados');
+                    };
+
+                    // Inicializar página
+                    loadProfile();
+
+                }).catch(error => {
+                    console.error('❌ Error al cargar módulos:', error);
+                    updateLoadingStatus('Error al cargar módulos');
+                    setTimeout(() => {
+                        showErrorSafe('Error al cargar los módulos necesarios. Verifica tu conexión a internet.');
+                    }, 2000);
                 });
 
-                // Verificar autenticación y cargar perfil
-                const initializePage = async () => {
-                    const session = await authGuard(true);
-                    if (session) {
-                        await loadProfile();
-                    }
-                };
-
-                // Inicializar página
-                initializePage();
-
             } catch (error) {
-                console.error('Error al inicializar página de perfil:', error);
-                showError('Error al cargar la aplicación. Recarga la página.');
+                console.error('❌ Error crítico de inicialización:', error);
+                updateLoadingStatus('Error crítico de inicialización');
+                setTimeout(() => {
+                    showErrorSafe('Error crítico al inicializar la aplicación.');
+                }, 2000);
             }
         }
     </script>
