@@ -520,7 +520,38 @@ export const openTool = (baseUrl, userProfile = null) => {
     }
 };
 
-// Configuración de herramientas - FIX: Asegurar que sean strings
+/**
+ * 🎯 NUEVO: Generar enlaces personalizados para mostrar en perfil
+ * @param {Object} userProfile - Perfil completo del usuario
+ * @returns {Object} Objeto con enlaces personalizados
+ */
+export const getPersonalizedLinks = (userProfile) => {
+    if (!userProfile) {
+        return {
+            catalog: '#',
+            business: '#'
+        };
+    }
+
+    try {
+        // Generar enlaces usando las URLs del TOOL_CONFIG
+        const catalogUrl = generatePersonalizedUrl(TOOL_CONFIG.catalog.url, userProfile);
+        const businessUrl = generatePersonalizedUrl(TOOL_CONFIG.business.url, userProfile);
+
+        console.log('🔗 Enlaces personalizados generados:', { catalogUrl, businessUrl });
+
+        return {
+            catalog: catalogUrl,
+            business: businessUrl
+        };
+    } catch (error) {
+        console.error('❌ Error generando enlaces personalizados:', error);
+        return {
+            catalog: TOOL_CONFIG.catalog.url,
+            business: TOOL_CONFIG.business.url
+        };
+    }
+};
 export const TOOL_CONFIG = {
     catalog: {
         name: 'Catálogo Premium',
