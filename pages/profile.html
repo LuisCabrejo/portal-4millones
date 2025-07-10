@@ -139,11 +139,11 @@
                                 </p>
                                 <div style="background: var(--bg-light); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
                                     <strong>Catálogo:</strong>
-                                    <span id="catalog-link">https://catalogo.4millones.com/?socio=tu-id</span>
+                                    <span id="catalog-link">https://catalogo.4millones.com/?distribuidor=tu-nombre</span>
                                 </div>
                                 <div style="background: var(--bg-light); padding: 15px; border-radius: 12px;">
                                     <strong>Modelo de Negocio:</strong>
-                                    <span id="business-link">https://oportunidad.4millones.com/?socio=tu-id</span>
+                                    <span id="business-link">https://oportunidad.4millones.com/?distribuidor=tu-nombre</span>
                                 </div>
                             </div>
                         </div>
@@ -165,8 +165,31 @@
 
     <!-- Scripts modulares -->
     <script type="module">
-        import { initializeSupabase, authGuard, getUserProfile, updateUserProfile, logoutUser, getPersonalizedLinks } from '../assets/js/auth.js';
-        import { showMessage, clearMessage, updateButton, validateWhatsApp, validateURL, showLoading, showMainContent, showError, formatUserName, formatWhatsApp, validateField } from '../assets/js/utils.js';
+        // 🚨 FIX CRÍTICO: Imports corregidos - ELIMINADA importación duplicada
+        import {
+            initializeSupabase,
+            authGuard,
+            getUserProfile,
+            updateUserProfile,
+            logoutUser
+            // ❌ ELIMINADO: getPersonalizedLinks (estaba duplicado)
+        } from '../assets/js/auth.js';
+
+        import {
+            showMessage,
+            clearMessage,
+            updateButton,
+            validateWhatsApp,
+            validateURL,
+            showLoading,
+            showMainContent,
+            showError,
+            formatUserName,
+            formatWhatsApp,
+            validateField,
+            getPersonalizedLinks    // ✅ ÚNICA importación válida desde utils.js
+        } from '../assets/js/utils.js';
+
         import { MESSAGES } from '../assets/js/config.js';
 
         // Verificar que Supabase esté cargado e inicializar
@@ -209,6 +232,8 @@
                             return;
                         }
 
+                        console.log('📋 Perfil COMPLETO cargado en profile.html:', profile);
+
                         // Actualizar información en sidebar
                         const displayName = formatUserName(profile.full_name) || 'Usuario';
                         userNameEl.textContent = displayName;
@@ -227,8 +252,11 @@
                         whatsappInput.value = profile.whatsapp || '';
                         affiliateLinkInput.value = profile.affiliate_link || '';
 
-                        // Mostrar enlaces personalizados
-                        const personalizedLinks = getPersonalizedLinks(profile.id);
+                        // 🚨 FIX CRÍTICO: Mostrar enlaces personalizados usando perfil COMPLETO
+                        console.log('🔗 Generando enlaces personalizados para:', profile);
+                        const personalizedLinks = getPersonalizedLinks(profile);
+                        console.log('✅ Enlaces personalizados generados:', personalizedLinks);
+
                         catalogLinkEl.textContent = personalizedLinks.catalog;
                         businessLinkEl.textContent = personalizedLinks.business;
 
@@ -317,7 +345,7 @@
 
                     try {
                         // Actualizar perfil
-                        await updateUserProfile({
+                        const updatedProfile = await updateUserProfile({
                             full_name: fullNameInput.value.trim(),
                             whatsapp: formatWhatsApp(whatsapp),
                             affiliate_link: affiliateLink
@@ -332,6 +360,14 @@
 
                         const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
                         profileAvatarEl.textContent = initials;
+
+                        // 🚨 FIX CRÍTICO: Actualizar enlaces personalizados con perfil actualizado
+                        if (updatedProfile) {
+                            console.log('🔗 Actualizando enlaces con perfil actualizado:', updatedProfile);
+                            const personalizedLinks = getPersonalizedLinks(updatedProfile);
+                            catalogLinkEl.textContent = personalizedLinks.catalog;
+                            businessLinkEl.textContent = personalizedLinks.business;
+                        }
 
                     } catch (error) {
                         console.error('Error al actualizar perfil:', error);

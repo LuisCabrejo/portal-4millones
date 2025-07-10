@@ -229,10 +229,6 @@ export const logoutUser = async () => {
     }
 };
 
-// Generar enlaces personalizados
-export const getPersonalizedLinks = (userId) => {
-    return {
-        catalog: `${APP_CONFIG.tools.catalog}?socio=${userId}`,
-        business: `${APP_CONFIG.tools.business}?socio=${userId}`
-    };
-};
+// 🚨 FIX CRÍTICO: FUNCIÓN ELIMINADA
+// getPersonalizedLinks ahora SOLO existe en utils.js
+// Esto elimina el conflicto de declaración duplicada

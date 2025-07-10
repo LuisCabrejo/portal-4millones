@@ -245,13 +245,13 @@
 
     <!-- Script con todas las correcciones -->
     <script type="module">
-        // Importar funciones necesarias
+        // 🚨 FIX CRÍTICO: Imports corregidos - ELIMINADA importación duplicada
         import {
             initializeSupabase,
             authGuard,
             getUserProfile,
-            logoutUser,
-            getPersonalizedLinks
+            logoutUser
+            // ❌ ELIMINADO: getPersonalizedLinks (estaba duplicado)
         } from './assets/js/auth.js';
 
         import {
@@ -261,9 +261,9 @@
             formatUserName,
             showMessage,
             clearMessage,
-            shareToolWithWhatsApp,  // ✅ WhatsApp funcionando
-            generatePersonalizedUrl, // 🎯 Nueva función para URLs amigables
-            getPersonalizedLinks,    // 🎯 Nueva función para enlaces del perfil
+            shareToolWithWhatsApp,      // ✅ WhatsApp funcionando
+            generatePersonalizedUrl,    // 🎯 Nueva función para URLs amigables
+            getPersonalizedLinks,       // ✅ ÚNICA importación válida desde utils.js
             logout,
             TOOL_CONFIG,
             initializeMobileHeaderControl  // 📱 Control de header mobile
@@ -324,12 +324,13 @@
                             return;
                         }
 
-                        // Guardar perfil globalmente
+                        // 🚨 FIX CRÍTICO: Guardar perfil COMPLETO globalmente
                         currentUserProfile = profile;
-                        console.log('📋 Perfil cargado:', {
+                        console.log('📋 Perfil COMPLETO cargado:', {
                             id: profile.id,
                             email: profile.email,
-                            name: profile.full_name || profile.first_name
+                            full_name: profile.full_name,
+                            whatsapp: profile.whatsapp
                         });
 
                         console.log('🎨 Personalizando portal premium...');
@@ -446,7 +447,9 @@
                             const toolType = target.dataset.tool;
                             const toolUrl = target.dataset.url;
 
-                            if (!currentUserProfile) {
+                            // 🚨 FIX CRÍTICO: Verificar que currentUserProfile sea válido
+                            if (!currentUserProfile || !currentUserProfile.id) {
+                                console.error('❌ currentUserProfile no válido:', currentUserProfile);
                                 showMessage('❌ Error: Perfil de usuario no disponible', 'error');
                                 return;
                             }
@@ -464,7 +467,12 @@
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    console.log(`📱 Compartiendo ${toolType} vía WhatsApp:`, toolUrl);
+                                    console.log(`📱 Compartiendo ${toolType} vía WhatsApp:`, {
+                                        toolUrl,
+                                        userProfile: currentUserProfile
+                                    });
+
+                                    // 🚨 FIX CRÍTICO: Pasar perfil COMPLETO, no solo ID
                                     shareToolWithWhatsApp(toolType, currentUserProfile, toolUrl);
 
                                 } else if (action === 'open') {
@@ -475,9 +483,12 @@
                                         throw new Error('URL de herramienta no encontrada');
                                     }
 
-                                    console.log(`🔗 Abriendo ${toolType} con perfil:`, currentUserProfile);
-                                    // 🚀 CAMBIO PRINCIPAL: Pasar perfil completo en lugar de solo URL
+                                    console.log(`🔗 Abriendo ${toolType} con perfil COMPLETO:`, currentUserProfile);
+
+                                    // 🚨 FIX CRÍTICO: Pasar perfil COMPLETO en lugar de solo URL
                                     const personalizedUrl = generatePersonalizedUrl(toolUrl, currentUserProfile);
+                                    console.log('🎯 URL personalizada generada:', personalizedUrl);
+
                                     window.open(personalizedUrl, '_blank');
                                     showMessage('✅ Abriendo herramienta', 'success');
                                 }
